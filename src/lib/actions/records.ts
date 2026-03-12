@@ -121,7 +121,7 @@ export async function uploadRecord(
   // Step 2: Insert source_records row with canonical_ref collision retry
   let canonicalRef = baseRef;
   let recordError: { message: string; code?: string } | null = null;
-  for (let attempt = 1; attempt <= MAX_COLLISION_RETRIES + 1; attempt++) {
+  for (let attempt = 1; attempt <= MAX_COLLISION_RETRIES; attempt++) {
     canonicalRef = attempt === 1 ? baseRef : appendCollisionSuffix(baseRef, attempt);
     const { error } = await supabase.from("source_records").insert({
       id: recordId,

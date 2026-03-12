@@ -16,7 +16,7 @@
         "Sign in as a non-admin user and confirm restricted admin actions are hidden or blocked.",
         "Sign out and confirm protected routes redirect back to authentication."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F002",

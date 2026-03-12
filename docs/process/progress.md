@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 0 |
-| Remaining | 24 |
+| Completed | 1 |
+| Remaining | 23 |
 | Current Day | 1 |
 
 ## Day 1: Foundation
@@ -14,7 +14,7 @@
 - [x] Project scaffolding complete
 - [x] CLAUDE.md configured
 - [x] docs/ structure ready
-- [x] Authentication flow implemented (code complete — SQL migration + manual AC verification pending)
+- [x] Authentication flow implemented — F001 PASSED
 - [ ] Project and team management implemented
 - [ ] Manual upload workflow visible
 - [ ] Canonical record creation working
@@ -84,10 +84,12 @@
 - Execution docs prepared
 
 ### Session 2 — 2026-03-12
-- F001 Authentication and Role-Based Access implemented
+- F001 Authentication and Role-Based Access — implemented, reviewed, and merged
 - Plan written with addendums: RLS recursion fix, null-profile diagnostic logging, promoteUser input validation, SignOutButton as Server Component, AC-to-step mapping
-- Build and typecheck pass clean
-- Awaiting: SQL migration run + manual AC verification to mark F001 passes = true
+- SQL migration applied to remote Supabase; both users provisioned
+- Supabase CLI linked; Vercel env vars set for production and development
+- PR #1 reviewed by Codex (3 review rounds), all feedback addressed, squash merged to main
+- F001 marked as passed
 
 ---
 

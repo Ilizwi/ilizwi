@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-12
 **Branch:** `codex/f003-manual-archive-upload-intake`
-**Status:** Approved with addendums
+**Status:** PASSED — merged to main (PR #3, commit 69c1a5d)
 
 ---
 
@@ -176,19 +176,26 @@ Modify `src/app/(app)/projects/[id]/page.tsx`:
 
 ---
 
+## Post-Implementation Notes
+
+- Two P1 findings from code review resolved in a follow-up migration (20260312000002_f003_fixes.sql): compensating cleanup DELETE policies were missing, and super_admin insert paths were blocked by RLS while allowed in application code. Fixed by adding `is_super_admin()` SECURITY DEFINER helper and widening INSERT/DELETE policies.
+- `source_records` DELETE policy is deliberately narrow: `created_by = auth.uid() AND record_status = 'raw'` — only the uploader can trigger cleanup, only while the record is still raw. Approved/reviewed records are immutable.
+- `file_assets` has no DELETE policy. The compensating path only ever deletes `source_records` (if file_assets insert fails) and `storage.objects`. `file_assets` rows where `is_original = true` are permanently immutable by policy.
+- F004 (Upload Metadata Enforcement and File Naming) is the next feature. Its system-generated naming convention step was not part of F003 scope — F003 sanitizes filenames but does not rename them according to a system convention.
+
 ## Acceptance Criteria
 
-- [ ] Researcher can upload a file within a project
-- [ ] Required fields enforced server-side (source_archive, publication_title, language)
-- [ ] File stored at deterministic path: `{project_id}/{record_id}/{safe_filename}`, upsert: false
-- [ ] `source_records` row created and linked to project
-- [ ] `file_assets` row created and linked to record
-- [ ] Record visible after page reload (persists)
-- [ ] Original file preserved — no silent overwrite
-- [ ] Only project_admin and researcher can upload (both page-level guard AND server action check)
-- [ ] translator/reviewer attempting upload (direct POST) gets explicit "Insufficient permissions" error
-- [ ] Storage + DB failure leaves no orphans (compensating cleanup verified)
-- [ ] Constrained fields use SQL enums, not raw text
+- [x] Researcher can upload a file within a project
+- [x] Required fields enforced server-side (source_archive, publication_title, language)
+- [x] File stored at deterministic path: `{project_id}/{record_id}/{safe_filename}`, upsert: false
+- [x] `source_records` row created and linked to project
+- [x] `file_assets` row created and linked to record
+- [x] Record visible after page reload (persists)
+- [x] Original file preserved — no silent overwrite
+- [x] Only project_admin and researcher can upload (both page-level guard AND server action check)
+- [x] translator/reviewer attempting upload (direct POST) gets explicit "Insufficient permissions" error
+- [x] Storage + DB failure leaves no orphans (compensating cleanup verified — DELETE policies added in fix migration)
+- [x] Constrained fields use SQL enums, not raw text
 
 ---
 

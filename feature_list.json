@@ -46,7 +46,7 @@
         "Confirm the platform preserves the original uploaded file without overwriting it.",
         "Reopen the created record and verify that the uploaded source file and entered metadata are visible."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F004",

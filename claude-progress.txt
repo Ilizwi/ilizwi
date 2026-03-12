@@ -5,7 +5,7 @@
 ## Current State
 As of: 2026-03-12
 Completed: F001, F002, F003
-Next: F004 — Text Layer Management (P0, Day 1)
+Next: F004 — Upload Metadata Enforcement and File Naming (P0, Day 1)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -17,10 +17,10 @@ Next: F004 — Text Layer Management (P0, Day 1)
 - Readex permissions response pending
 
 ## Next Actions
-- F004: Text Layer Management
-  - OCR / transcription / translation layer storage
-  - Layer status workflow (raw → reviewed → approved)
-  - Separate text layers per record
+- F004: Upload Metadata Enforcement and File Naming
+  - System-generated file naming convention for stored records
+  - Block upload completion when required metadata is missing (UI + server)
+  - Show normalized internal name alongside original source details on record
 
 ---
 
@@ -33,14 +33,14 @@ Next: F004 — Text Layer Management (P0, Day 1)
 - SQL migration applied; both users provisioned; Vercel env vars set
 
 ### Session 4 — 2026-03-12
-- F003: Manual Archive Upload Intake — implemented via parallel agent team, reviewed, committed
-- Migration: source_records + file_assets tables, SQL enums (source_type/record_status/asset_type), RLS via is_project_member SECURITY DEFINER helper, archive-files private bucket (50MB, allowed mime types)
-- Action: uploadRecord with pre-generated UUID, compensating transaction model (storage cleanup on DB failure), explicit role enforcement (project_admin + researcher; translator/reviewer get explicit error), server-side file validation (mime, size, required fields, sanitized filename), upsert: false
-- Types: RecordStatus, SourceRecord, FileAsset added to src/types/index.ts
-- Pages: /projects/[id]/upload (role-gated server component), /projects/[id]/records (table with status badges, empty state, conditional upload button)
+- F003: Manual Archive Upload Intake — implemented via parallel agent team, PR reviewed (2 rounds), squash merged to main
+- Migrations: 20260312000001_f003_source_records.sql (tables, enums, RLS, bucket) + 20260312000002_f003_fixes.sql (compensating cleanup DELETE policies, super_admin RLS alignment, is_super_admin() helper)
+- Action: uploadRecord — pre-generated UUID, compensating transaction (storage cleanup on DB failure), explicit role guard, server-side file validation, upsert: false
+- Types: RecordStatus, SourceRecord, FileAsset
+- Pages: /projects/[id]/upload (role-gated), /projects/[id]/records (table, status badges, empty state)
 - Project detail: records count + view/upload links
-- Build passes clean, migration applied to remote DB
-- Branch: codex/f003-manual-archive-upload-intake, commit a6316d1
+- PR #3 — two P1 findings from code review (compensating cleanup blocked by missing DELETE policies; super_admin RLS gap) — both fixed and re-merged
+- All 5 PRD test steps verified. F003 PASSED.
 
 ### Session 3 — 2026-03-12
 - F002: Project and Team Management — implemented, reviewed, fixed, merged

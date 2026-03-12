@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 2 |
-| Remaining | 22 |
+| Completed | 3 |
+| Remaining | 21 |
 | Current Day | 1 |
 
 ## Day 1: Foundation
@@ -16,7 +16,7 @@
 - [x] docs/ structure ready
 - [x] F001: Authentication and Role-Based Access — PASSED
 - [x] F002: Project and Team Management — PASSED
-- [ ] F003: Manual Archive Upload Intake
+- [x] F003: Manual Archive Upload Intake — PASSED
 - [ ] F004: Upload Metadata Enforcement and File Naming
 - [ ] F005: Canonical Record Creation and Linking
 
@@ -100,6 +100,15 @@
 - supabase db push applied to remote
 - PR #2 reviewed (FK disambiguation, auth returns instead of throws, unused helper removed, audit log user_id), all fixed, squash merged to main
 - F002 marked as passed
+
+### Session 4 — 2026-03-12
+- F003 Manual Archive Upload Intake — implemented via parallel agent team (backend + frontend tracks), PR reviewed, two P1 fixes applied, squash merged to main
+- Migrations applied: source_records + file_assets tables with SQL enums (source_type, record_status, asset_type); is_super_admin() helper; RLS policies for SELECT/INSERT + DELETE (compensating cleanup); archive-files private storage bucket (50MB, mime whitelist)
+- uploadRecord server action: pre-generated UUID, compensating transaction with storage rollback on DB failure, explicit role guard (project_admin/researcher only), server-side mime/size/field validation, upsert: false
+- Types added: RecordStatus, SourceRecord, FileAsset
+- Pages: /projects/[id]/upload (role-gated), /projects/[id]/records (table + status badges + empty state); project detail updated with records count and links
+- Code review findings: compensating cleanup DELETE policies missing (fixed), super_admin RLS gap (fixed with is_super_admin() + updated INSERT/DELETE policies)
+- All 5 PRD test steps satisfied. F003 marked as passed
 
 ---
 

@@ -31,7 +31,7 @@
         "View the team roster for the project and confirm the member appears with the correct role.",
         "Remove or change a team member role and confirm the update is reflected immediately."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F003",
@@ -358,7 +358,7 @@
         "Perform several actions such as upload, edit, annotation, and translation correction on one or more records.",
         "Open the admin audit or activity view.",
         "Confirm the recent actions appear with user and timestamp context.",
-        "Filter or inspect a specific record’s activity history.",
+        "Filter or inspect a specific record\u2019s activity history.",
         "Confirm the audit information helps identify who changed what and when."
       ],
       "passes": false

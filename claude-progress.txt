@@ -2,58 +2,47 @@
 # This file tracks session-by-session progress
 # Format: [Date] [Session] - Notes
 
-## Current Session
-Started: 2026-03-12
-Focus: F002 — Project and Team Management
-Status: Implementation complete on codex/f002-project-team-management, pending PR + migration push
-
-## Session Notes (F002)
-- Plan written at plan/2026-03-12-f002-project-team-management.md with all review addendums applied
-- SQL migration: supabase/migrations/20260312212538_f002_projects_and_memberships.sql
-  - project_status and project_role enums
-  - projects and project_memberships tables
-  - SECURITY DEFINER helpers: is_project_member(), is_project_admin() (avoids RLS recursion)
-  - Creator auto-membership trigger (project_admin on insert)
-  - Auto-updated_at trigger
-  - RLS policies on both tables
-- Types: added Project, ProjectMembership, ProjectStatus to src/types/index.ts
-- Project guard: src/lib/auth/project-guard.ts (requireProjectMember, requireProjectAdmin)
-- Server actions: src/lib/actions/projects.ts
-  - createProject (server-side slug generation, collision suffix)
-  - addMember (email lookup, duplicate guard)
-  - updateMemberRole (orphan guard: can't demote last admin)
-  - removeMember (orphan guard: can't remove last admin)
-  - Audit log on every mutation
-- Pages: /projects (list), /projects/new (create), /projects/[id] (detail + team)
-- Components: ProjectForm, AddMemberForm, MemberRoleForm, RemoveMemberForm
-- Sidebar nav: "Projects" link added to app layout
-- Build: clean (0 errors, 0 warnings)
-- TypeScript: clean (0 errors)
-- Branch: codex/f002-project-team-management (3 commits)
-
-## Previous Session Notes (F001)
-- Implemented Profile type, auth actions, role guards, LoginForm, SignOutButton
-- Admin users page, SQL migration applied, both users provisioned
-- PR reviewed, merged to main via squash
-
-## Next Actions
-- Run `supabase db push` to apply F002 migration to remote
-- Create PR for codex/f002-project-team-management
-- After merge: F003 — Document Upload and Asset Management
+## Current State
+As of: 2026-03-12
+Completed: F001, F002
+Next: F003 — Manual Archive Upload Intake (P0, Day 1)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
-
-## In Progress
-- F002: Project and Team Management — implementation complete, pending migration push + PR
+- F002: Project and Team Management — PASSED (2026-03-12)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
+## Next Actions
+- F003: Manual Archive Upload Intake
+  - File upload to Supabase Storage
+  - Required metadata fields (source archive, publication, language, date)
+  - Original file preservation
+  - Record creation linked to project
+
 ---
 
-[2026-03-12] [Planning] - Project brief, technical brief, source findings, PRD, and feature list created.
-[2026-03-12] [Planning] - Repository structure normalized and ILIZWI design direction translated into implementation docs.
-[2026-03-12] [F001] - Authentication and role-based access fully implemented. Build passes. SQL migration applied.
-[2026-03-12] [F002] - Project and team management fully implemented. Build passes (0 errors). Migration pending push.
+### Session 1 — 2026-03-12
+- Initial project docs, PRD, feature list, architecture docs created
+- Source integrations researched and validated
+
+### Session 2 — 2026-03-12
+- F001: Authentication and Role-Based Access — implemented, reviewed (3 rounds), merged
+- SQL migration applied; both users provisioned; Vercel env vars set
+
+### Session 3 — 2026-03-12
+- F002: Project and Team Management — implemented, reviewed, fixed, merged
+- Backend: migration (projects + project_memberships, SECURITY DEFINER RLS helpers, triggers)
+- Types: Project, ProjectMembership, ProjectStatus
+- Guard: requireProjectMember (non-members redirect)
+- Actions: createProject, addMember, updateMemberRole, removeMember
+  — orphan guard on both role demotion and removal
+  — explicit server-side admin assertion (returns { error } not throws)
+  — audit log with actor + affected user_id on all mutations
+- Pages: /projects, /projects/new, /projects/[id]
+- Components: ProjectForm, AddMemberForm, MemberRoleForm, RemoveMemberForm
+- Sidebar: Projects nav link
+- supabase db push applied to remote
+- PR #2 reviewed (4 findings: FK disambiguation, auth throws→returns, unused helper, audit user_id), all fixed, squash merged

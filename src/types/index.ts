@@ -3,6 +3,15 @@
 
 export type GlobalRole = "super_admin" | "user";
 
+export type Profile = {
+  id: string;
+  email: string;
+  display_name: string | null;
+  global_role: GlobalRole;
+  created_at: string;
+  updated_at: string;
+};
+
 export type ProjectRole = "project_admin" | "researcher" | "translator" | "reviewer";
 
 export type SourceType =

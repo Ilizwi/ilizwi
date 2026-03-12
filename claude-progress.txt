@@ -4,32 +4,38 @@
 
 ## Current Session
 Started: 2026-03-12
-Focus: Product planning and documentation
-Status: In progress
+Focus: F001 — Authentication and Role-Based Access
+Status: Implementation complete — pending manual SQL migration and AC verification
 
 ## Session Notes
-- Created durable project documentation pack
-- Wrote the project PRD
-- Generated feature_list.json from the approved PRD
-- Confirmed source posture for Readex, Ibali, NLSA, and Wits
-- Prepared the repository for feature-by-feature implementation sessions
-- Reorganized docs into product, context, engineering, design, and process folders
-- Converted ILIZWI brand direction into agent-ready design docs and token spec
+- Created plan/2026-03-12-f001-auth-role-access.md with all review addendums applied
+- Implemented Profile type in src/types/index.ts
+- Created src/lib/actions/auth.ts (signIn, signOut, promoteUser with input validation)
+- Created src/lib/auth/role-guard.ts (requireAuth with diagnostic logging, requireSuperAdmin)
+- Created src/components/auth/LoginForm.tsx (useActionState, ILIZWI styling)
+- Created src/components/app/SignOutButton.tsx (Server Component, no JS)
+- Updated src/app/(auth)/login/page.tsx (ILIZWI brand shell + LoginForm)
+- Updated src/app/(app)/layout.tsx (auth guard, conditional Admin nav, user footer)
+- Created src/app/(app)/admin/users/page.tsx (super-admin-gated user table + promote flow)
+- Build and typecheck pass clean
 
 ## Next Actions
-- Finalize bootstrap and execution docs
-- Create architecture and data-model references
-- Prepare Day 1 feature planning
-- Wait for final product naming to be locked if it changes from ILIZWI
+- User must run SQL migration in Supabase SQL editor (see plan file for full SQL)
+- User must manually set super admin: UPDATE profiles SET global_role = 'super_admin' WHERE email = '...'
+- User must create second test user in Supabase Auth dashboard for AC3/AC4 testing
+- Manually verify all 5 acceptance criteria before marking F001 passes = true
+- Next feature: F002 — Project and Team Management
 
 ## Completed Features
-(None yet)
+(None yet — F001 code complete, awaiting SQL migration + manual AC verification)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
+- F001: SQL migration not yet run (manual step required)
 
 ---
 
 [2026-03-12] [Planning] - Project brief, technical brief, source findings, PRD, and feature list created.
 [2026-03-12] [Planning] - Repository structure normalized and ILIZWI design direction translated into implementation docs.
+[2026-03-12] [F001] - Authentication and role-based access fully implemented. Build passes. SQL migration pending.

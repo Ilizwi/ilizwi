@@ -15,7 +15,7 @@ export default async function ProjectDetailPage({
 
   const { data: memberships } = await supabase
     .from("project_memberships")
-    .select("id, user_id, role, profiles(id, email, display_name)")
+    .select("id, user_id, role, profiles!project_memberships_user_id_fkey(id, email, display_name)")
     .eq("project_id", id);
 
   const callerMembership = (memberships ?? []).find(

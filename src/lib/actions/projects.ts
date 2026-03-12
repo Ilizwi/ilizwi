@@ -20,8 +20,7 @@ async function assertProjectAdmin(
   supabase: SupabaseClient,
   projectId: string,
   callerId: string
-): Promise<void> {
-  // Check if super_admin first
+): Promise<string | null> {
   const { data: callerProfile } = await supabase
     .from("profiles")
     .select("global_role")
@@ -29,7 +28,7 @@ async function assertProjectAdmin(
     .single();
 
   if (callerProfile?.global_role === "super_admin") {
-    return;
+    return null;
   }
 
   const { data: membership } = await supabase
@@ -40,8 +39,10 @@ async function assertProjectAdmin(
     .single();
 
   if (!membership || membership.role !== "project_admin") {
-    throw new Error("Insufficient permissions");
+    return "Insufficient permissions";
   }
+
+  return null;
 }
 
 export async function createProject(
@@ -105,7 +106,8 @@ export async function addMember(
   const email = (formData.get("email") as string)?.trim();
   const role = formData.get("role") as string;
 
-  await assertProjectAdmin(supabase, projectId, profile.id);
+  const authError = await assertProjectAdmin(supabase, projectId, profile.id);
+  if (authError) return { error: authError };
 
   // Look up user by email
   const { data: targetUser } = await supabase
@@ -153,7 +155,20 @@ export async function updateMemberRole(
   const membershipId = formData.get("membershipId") as string;
   const newRole = formData.get("newRole") as string;
 
-  await assertProjectAdmin(supabase, projectId, profile.id);
+  const authError = await assertProjectAdmin(supabase, projectId, profile.id);
+  if (authError) return { error: authError };
+
+  // Fetch target membership for orphan guard and audit log
+  const { data: targetMembership } = await supabase
+    .from("project_memberships")
+    .select("user_id, role")
+    .eq("id", membershipId)
+    .eq("project_id", projectId)
+    .single();
+
+  if (!targetMembership) {
+    return { error: "Membership not found" };
+  }
 
   // Orphan guard: if demoting from project_admin, ensure at least one remains
   if (newRole !== "project_admin") {
@@ -180,7 +195,7 @@ export async function updateMemberRole(
   }
 
   console.log(
-    `[updateMemberRole] actor=${profile.id} changed membership=${membershipId} to ${newRole} in project=${projectId}`
+    `[updateMemberRole] actor=${profile.id} changed user=${targetMembership.user_id} from ${targetMembership.role} to ${newRole} in project=${projectId}`
   );
 
   revalidatePath(`/projects/${projectId}`);
@@ -197,12 +212,13 @@ export async function removeMember(
   const projectId = formData.get("projectId") as string;
   const membershipId = formData.get("membershipId") as string;
 
-  await assertProjectAdmin(supabase, projectId, profile.id);
+  const authError = await assertProjectAdmin(supabase, projectId, profile.id);
+  if (authError) return { error: authError };
 
-  // Fetch membership to check role for orphan guard
+  // Fetch membership for orphan guard and audit log
   const { data: membership } = await supabase
     .from("project_memberships")
-    .select("role")
+    .select("user_id, role")
     .eq("id", membershipId)
     .eq("project_id", projectId)
     .single();
@@ -235,7 +251,7 @@ export async function removeMember(
   }
 
   console.log(
-    `[removeMember] actor=${profile.id} removed membership=${membershipId} from project=${projectId}`
+    `[removeMember] actor=${profile.id} removed user=${membership.user_id} (membership=${membershipId}) from project=${projectId}`
   );
 
   revalidatePath(`/projects/${projectId}`);

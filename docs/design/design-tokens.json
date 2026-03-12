@@ -1,0 +1,55 @@
+{
+  "brand": {
+    "name": "ILIZWI",
+    "concept": "The Digital Scriptorium",
+    "tone": ["scholarly", "weighty", "calm", "intentional"]
+  },
+  "modes": {
+    "vault": {
+      "background": "#0C0C0D",
+      "surface": "#161618",
+      "text": "#E8E2D9",
+      "muted": "#8B8680"
+    },
+    "desk": {
+      "background": "#F7F9FA",
+      "sheet": "#FFFFFF",
+      "text": "#1A1A24",
+      "border": "rgba(15, 23, 42, 0.08)"
+    }
+  },
+  "accent": {
+    "historic_green": "#4A5D4E",
+    "underline": "rgba(74, 93, 78, 0.12)"
+  },
+  "typography": {
+    "serif": {
+      "primary": "Playfair Display",
+      "fallbacks": ["Newsreader", "Tiempos Fine", "serif"],
+      "title_tracking": "-0.02em"
+    },
+    "sans": {
+      "primary": "Inter",
+      "fallbacks": ["Geist", "SF Pro", "sans-serif"]
+    }
+  },
+  "radius": {
+    "ui": ["2px", "4px"],
+    "sheet": "8px"
+  },
+  "shadow": {
+    "desk": "0 40px 80px rgba(0, 0, 0, 0.03)"
+  },
+  "motion": {
+    "page_reveal_duration": "1200ms",
+    "page_reveal_transform": "scale(0.99) -> scale(1.0)",
+    "hover": "300ms ease-out",
+    "annotation_underline": "400ms"
+  },
+  "rules": {
+    "sidebar_stays_dark": true,
+    "avoid_pure_black_white": true,
+    "content_centered": true,
+    "metadata_small_caps": true
+  }
+}

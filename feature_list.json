@@ -1,0 +1,367 @@
+{
+  "project": "Panashe Archival Research Platform",
+  "version": "1.0",
+  "generated": "2026-03-12",
+  "features": [
+    {
+      "id": "F001",
+      "category": "core",
+      "description": "Authentication and Role-Based Access",
+      "day": 1,
+      "priority": "P0",
+      "steps": [
+        "Sign in as the initial super admin using the configured authentication flow.",
+        "View a protected application area that is inaccessible to unauthenticated users.",
+        "Create or promote another user to an elevated admin role from the admin interface.",
+        "Sign in as a non-admin user and confirm restricted admin actions are hidden or blocked.",
+        "Sign out and confirm protected routes redirect back to authentication."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F002",
+      "category": "core",
+      "description": "Project and Team Management",
+      "day": 1,
+      "priority": "P0",
+      "steps": [
+        "Create a new project workspace with a title and basic project metadata.",
+        "Invite or add a team member to the project.",
+        "Assign a project role to the added team member.",
+        "View the team roster for the project and confirm the member appears with the correct role.",
+        "Remove or change a team member role and confirm the update is reflected immediately."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F003",
+      "category": "core",
+      "description": "Manual Archive Upload Intake",
+      "day": 1,
+      "priority": "P0",
+      "steps": [
+        "Upload a supported source file such as a PDF or document file through the intake interface.",
+        "Enter required metadata fields during upload, including source archive, publication, language, and date where available.",
+        "Confirm the file is stored successfully and linked to a newly created record.",
+        "Confirm the platform preserves the original uploaded file without overwriting it.",
+        "Reopen the created record and verify that the uploaded source file and entered metadata are visible."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F004",
+      "category": "core",
+      "description": "Upload Metadata Enforcement and File Naming",
+      "day": 1,
+      "priority": "P0",
+      "steps": [
+        "Start a file upload and attempt to continue without filling required metadata fields.",
+        "Confirm the system blocks completion until required metadata is supplied.",
+        "Complete the upload with valid metadata.",
+        "Confirm the system applies a consistent generated naming convention to the stored file or record.",
+        "Confirm the stored record shows both the original source details and the normalized internal naming outcome."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F005",
+      "category": "core",
+      "description": "Canonical Record Creation",
+      "day": 1,
+      "priority": "P0",
+      "steps": [
+        "Create a record through manual upload.",
+        "Confirm the record stores the source archive, source identifier or upload source, publication, language, and date if provided.",
+        "Confirm the record stores linked file assets separately from text-layer content.",
+        "Reopen the record and verify provenance information is still visible and unchanged.",
+        "Confirm the record can be updated with additional linked text layers without replacing the original source file."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F006",
+      "category": "core",
+      "description": "Ibali Source Integration",
+      "day": 2,
+      "priority": "P0",
+      "steps": [
+        "Query the Ibali integration using a known issue such as an Isigidimi record.",
+        "Confirm the platform retrieves issue-level metadata from the Ibali API.",
+        "Confirm the platform retrieves or stores linked transcription file references from the Ibali media records.",
+        "Confirm extracted transcription text from the Ibali media payload is captured into the record workflow.",
+        "Confirm the imported record is saved as a canonical internal record with source provenance marked as Ibali."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F007",
+      "category": "core",
+      "description": "NLSA Source Integration",
+      "day": 2,
+      "priority": "P0",
+      "steps": [
+        "Query the NLSA integration using a known collection such as Imvo Zabantsundu.",
+        "Confirm the platform retrieves item metadata from the NLSA ContentDM endpoints.",
+        "Confirm the platform retrieves or stores the linked source PDF reference for a selected item.",
+        "Confirm OCR text exposed by NLSA is captured into the record workflow as a source text layer.",
+        "Confirm the imported record is saved as a canonical internal record with source provenance marked as NLSA."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F008",
+      "category": "secondary",
+      "description": "Wits Supplementary Source Intake",
+      "day": 2,
+      "priority": "P1",
+      "steps": [
+        "Search or harvest Wits metadata for a Panashe-relevant query such as Imvo or newspaper.",
+        "Confirm the platform can store Wits record metadata as a source-linked record or discovery entry.",
+        "Where a downloadable file or digital object is publicly available, import or link that file into the record.",
+        "Confirm the record is marked as a Wits-derived supplementary source rather than a primary structured newspaper source.",
+        "Confirm Wits records can still participate in search and filtering inside the platform."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F009",
+      "category": "core",
+      "description": "Source File Viewer",
+      "day": 2,
+      "priority": "P0",
+      "steps": [
+        "Open a record that has an attached or linked source file.",
+        "View the source file inside the application without downloading it first.",
+        "Navigate back to the record metadata without losing context.",
+        "Confirm that source provenance remains visible while viewing the source.",
+        "Confirm the viewer works for at least one uploaded file and one imported source-linked file."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F010",
+      "category": "core",
+      "description": "OCR and Source Text Acquisition Layer",
+      "day": 2,
+      "priority": "P0",
+      "steps": [
+        "Open a record imported from a source that already exposes OCR or extracted text.",
+        "Confirm the source text is stored as a distinct text layer rather than merged into corrected transcription.",
+        "Upload or select a record that requires OCR or text extraction.",
+        "Run the text acquisition process and confirm a source text layer is created.",
+        "Confirm the record clearly distinguishes the source-acquired text layer from later corrected text layers."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F011",
+      "category": "core",
+      "description": "Text Layer Management",
+      "day": 2,
+      "priority": "P0",
+      "steps": [
+        "Open a record with at least one source text layer.",
+        "Add a second text layer for corrected transcription or corroborating transcription.",
+        "Confirm the system stores the two text layers separately.",
+        "View both text layers and confirm their labels, provenance, and status are visible.",
+        "Confirm updating one text layer does not overwrite the other."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F012",
+      "category": "core",
+      "description": "Transcription Editor and Review Status",
+      "day": 3,
+      "priority": "P0",
+      "steps": [
+        "Open a record with a source text layer and enter transcription edit mode.",
+        "Save a corrected transcription as a distinct text layer or updated working transcription.",
+        "Mark the transcription with a status such as reviewed or needs expert review.",
+        "Reopen the record and confirm the corrected transcription persists with its status.",
+        "Confirm the original source-acquired text layer is still preserved separately."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F013",
+      "category": "core",
+      "description": "Machine Translation Draft Generation",
+      "day": 3,
+      "priority": "P0",
+      "steps": [
+        "Select a record with an eligible transcription layer.",
+        "Trigger machine translation draft generation.",
+        "Confirm a machine translation text layer is created and linked to the source transcription.",
+        "Confirm the machine translation is clearly labeled as a draft.",
+        "Confirm the record keeps the translation layer separate from both transcription and annotation layers."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F014",
+      "category": "core",
+      "description": "Translation Editor and Correction Workflow",
+      "day": 3,
+      "priority": "P0",
+      "steps": [
+        "Open a machine translation draft for a record.",
+        "Edit the draft and save a corrected translation.",
+        "Confirm the corrected translation is stored with author and timestamp context.",
+        "Confirm the original machine translation draft remains preserved separately.",
+        "Reopen the record and verify both translation versions are still accessible."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F015",
+      "category": "core",
+      "description": "Translation Memory",
+      "day": 3,
+      "priority": "P0",
+      "steps": [
+        "Save a corrected translation for a record.",
+        "Open another record with the same or closely matching source text segment.",
+        "Trigger translation generation or review for that record.",
+        "Confirm the system surfaces a prior corrected translation suggestion or reuse alert.",
+        "Confirm the user can accept, reject, or edit the suggested reused translation."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F016",
+      "category": "core",
+      "description": "Protected-Term and Glossary Rules",
+      "day": 3,
+      "priority": "P0",
+      "steps": [
+        "Create a protected-term rule for a key concept or term.",
+        "Mark the rule with a behavior such as do not translate, always flag, or approved translation.",
+        "Open a record containing that term.",
+        "Confirm the term is handled according to the configured rule inside the translation workflow.",
+        "Confirm the rule can be edited later without deleting the underlying record text."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F017",
+      "category": "core",
+      "description": "Scholarly Side-by-Side Reader",
+      "day": 4,
+      "priority": "P0",
+      "steps": [
+        "Open a record that has a source file, transcription, and translation.",
+        "View the source file and text layers side by side in the reader.",
+        "Confirm a user can switch between or compare available text layers.",
+        "Confirm notes or annotations are visible in the same research context.",
+        "Confirm the reader remains usable on a standard laptop viewport without breaking layout."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F018",
+      "category": "core",
+      "description": "Annotation and Notes",
+      "day": 4,
+      "priority": "P0",
+      "steps": [
+        "Open a record and add a note or annotation.",
+        "Link the note to the relevant record or text-layer context.",
+        "Save the note with author attribution.",
+        "Reopen the record and confirm the note is still visible.",
+        "Edit the note and confirm the updated version persists correctly."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F019",
+      "category": "secondary",
+      "description": "Uncertainty and Dispute Flags",
+      "day": 4,
+      "priority": "P1",
+      "steps": [
+        "Open a record or text layer and apply an uncertainty or dispute flag.",
+        "Save the flagged state.",
+        "Reopen the record and confirm the flag is visible in context.",
+        "Filter or search for flagged records and confirm the flagged record appears.",
+        "Update or clear the flag and confirm the change is reflected."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F020",
+      "category": "core",
+      "description": "Search and Filter",
+      "day": 4,
+      "priority": "P0",
+      "steps": [
+        "Search for a known term that exists in at least one imported or uploaded record.",
+        "Confirm matching records are returned.",
+        "Apply filters such as source archive, language, or date.",
+        "Confirm the result set updates correctly when filters are applied.",
+        "Open a result and confirm the user lands in the correct record context."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F021",
+      "category": "secondary",
+      "description": "Citation Packet Export",
+      "day": 5,
+      "priority": "P1",
+      "steps": [
+        "Open a record with source metadata, transcription, and translation.",
+        "Trigger citation packet generation.",
+        "Confirm the export includes source details, publication, date, and record metadata.",
+        "Confirm the export includes the relevant text layers and/or notes.",
+        "Confirm the export downloads or opens successfully in the expected format."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F022",
+      "category": "secondary",
+      "description": "Corpus Trend View",
+      "day": 5,
+      "priority": "P1",
+      "steps": [
+        "Open the corpus trend view for a known term present in multiple records.",
+        "Confirm the system groups or visualizes the term across at least one dimension such as date or publication.",
+        "Change a filter such as source or language.",
+        "Confirm the trend view updates accordingly.",
+        "Open one underlying record from the trend view and confirm navigation works."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F023",
+      "category": "polish",
+      "description": "Related Text Suggestions",
+      "day": 5,
+      "priority": "P2",
+      "steps": [
+        "Open a record that has enough text or metadata to support related suggestions.",
+        "View the related records section.",
+        "Confirm at least one suggested related record is shown.",
+        "Open a suggested record and confirm it is relevant by shared context, term, or source relationship.",
+        "Return to the original record and confirm the related suggestions remain available."
+      ],
+      "passes": false
+    },
+    {
+      "id": "F024",
+      "category": "secondary",
+      "description": "Admin Record Audit and Activity Trace",
+      "day": 5,
+      "priority": "P1",
+      "steps": [
+        "Perform several actions such as upload, edit, annotation, and translation correction on one or more records.",
+        "Open the admin audit or activity view.",
+        "Confirm the recent actions appear with user and timestamp context.",
+        "Filter or inspect a specific record’s activity history.",
+        "Confirm the audit information helps identify who changed what and when."
+      ],
+      "passes": false
+    }
+  ]
+}

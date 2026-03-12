@@ -13,7 +13,7 @@ export default async function RecordsListPage({
 
   const { data: records } = await supabase
     .from("source_records")
-    .select("id, publication_title, source_archive, language, date_issued, date_issued_raw, record_status, created_at")
+    .select("id, publication_title, source_archive, language, date_issued, date_issued_raw, record_status, canonical_ref, created_at")
     .eq("project_id", id)
     .order("created_at", { ascending: false });
 
@@ -90,6 +90,9 @@ export default async function RecordsListPage({
                   Archive
                 </th>
                 <th className="text-left px-4 py-2 text-desk-muted font-normal text-xs uppercase tracking-widest">
+                  Canonical Ref
+                </th>
+                <th className="text-left px-4 py-2 text-desk-muted font-normal text-xs uppercase tracking-widest">
                   Language
                 </th>
                 <th className="text-left px-4 py-2 text-desk-muted font-normal text-xs uppercase tracking-widest">
@@ -114,6 +117,9 @@ export default async function RecordsListPage({
                   </td>
                   <td className="px-4 py-3 text-desk-muted">
                     {r.source_archive}
+                  </td>
+                  <td className="px-4 py-3 text-desk-muted font-mono text-xs">
+                    {r.canonical_ref ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-desk-muted">
                     {r.language}

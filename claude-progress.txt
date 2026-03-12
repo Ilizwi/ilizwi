@@ -4,29 +4,48 @@
 
 ## Current Session
 Started: 2026-03-12
-Focus: F001 — Authentication and Role-Based Access
-Status: Complete and merged to main
+Focus: F002 — Project and Team Management
+Status: Implementation complete on codex/f002-project-team-management, pending PR + migration push
 
-## Session Notes
-- Created plan/2026-03-12-f001-auth-role-access.md with all review addendums applied
-- Implemented Profile type in src/types/index.ts
-- Created src/lib/actions/auth.ts (signIn, signOut, promoteUser with input validation + audit log)
-- Created src/lib/auth/role-guard.ts (requireAuth with diagnostic logging, requireSuperAdmin)
-- Created src/components/auth/LoginForm.tsx (useActionState, ILIZWI styling)
-- Created src/components/app/SignOutButton.tsx (Server Component, no JS)
-- Updated src/app/(auth)/login/page.tsx (ILIZWI brand shell + LoginForm)
-- Updated src/app/(app)/layout.tsx (auth guard, conditional Admin nav, user footer)
-- Created src/app/(app)/admin/users/page.tsx (super-admin-gated user table + promote flow)
-- SQL migration applied to remote Supabase project
-- Both users provisioned: sam.olatoye@gmail.com (super_admin), panashec130@gmail.com (user)
-- Supabase CLI installed, project linked, Vercel env vars set (production + development)
-- PR reviewed by Codex, all feedback addressed, merged to main via squash
+## Session Notes (F002)
+- Plan written at plan/2026-03-12-f002-project-team-management.md with all review addendums applied
+- SQL migration: supabase/migrations/20260312212538_f002_projects_and_memberships.sql
+  - project_status and project_role enums
+  - projects and project_memberships tables
+  - SECURITY DEFINER helpers: is_project_member(), is_project_admin() (avoids RLS recursion)
+  - Creator auto-membership trigger (project_admin on insert)
+  - Auto-updated_at trigger
+  - RLS policies on both tables
+- Types: added Project, ProjectMembership, ProjectStatus to src/types/index.ts
+- Project guard: src/lib/auth/project-guard.ts (requireProjectMember, requireProjectAdmin)
+- Server actions: src/lib/actions/projects.ts
+  - createProject (server-side slug generation, collision suffix)
+  - addMember (email lookup, duplicate guard)
+  - updateMemberRole (orphan guard: can't demote last admin)
+  - removeMember (orphan guard: can't remove last admin)
+  - Audit log on every mutation
+- Pages: /projects (list), /projects/new (create), /projects/[id] (detail + team)
+- Components: ProjectForm, AddMemberForm, MemberRoleForm, RemoveMemberForm
+- Sidebar nav: "Projects" link added to app layout
+- Build: clean (0 errors, 0 warnings)
+- TypeScript: clean (0 errors)
+- Branch: codex/f002-project-team-management (3 commits)
+
+## Previous Session Notes (F001)
+- Implemented Profile type, auth actions, role guards, LoginForm, SignOutButton
+- Admin users page, SQL migration applied, both users provisioned
+- PR reviewed, merged to main via squash
 
 ## Next Actions
-- Next feature: F002 — Project and Team Management
+- Run `supabase db push` to apply F002 migration to remote
+- Create PR for codex/f002-project-team-management
+- After merge: F003 — Document Upload and Asset Management
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
+
+## In Progress
+- F002: Project and Team Management — implementation complete, pending migration push + PR
 
 ## Blockers
 - Final product name pending
@@ -36,4 +55,5 @@ Status: Complete and merged to main
 
 [2026-03-12] [Planning] - Project brief, technical brief, source findings, PRD, and feature list created.
 [2026-03-12] [Planning] - Repository structure normalized and ILIZWI design direction translated into implementation docs.
-[2026-03-12] [F001] - Authentication and role-based access fully implemented. Build passes. SQL migration pending.
+[2026-03-12] [F001] - Authentication and role-based access fully implemented. Build passes. SQL migration applied.
+[2026-03-12] [F002] - Project and team management fully implemented. Build passes (0 errors). Migration pending push.

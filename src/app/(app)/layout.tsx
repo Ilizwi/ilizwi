@@ -28,6 +28,12 @@ export default async function AppLayout({
           >
             Dashboard
           </Link>
+          <Link
+            href="/projects"
+            className="block px-3 py-2 text-sm font-sans text-vault-muted hover:text-vault-text hover:bg-vault-surface/50 rounded-[2px] transition-colors"
+          >
+            Projects
+          </Link>
           {profile.global_role === "super_admin" && (
             <Link
               href="/admin/users"

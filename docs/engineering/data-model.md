@@ -1,52 +1,41 @@
 # Data Model Overview
 
 Last updated: 2026-03-12
-Status: Planning reference
 
-This is the logical domain model for V1. It is not yet a final SQL schema, but future implementation should align with it unless the planning docs are intentionally updated.
+Implementation status per entity is noted inline. Entities without a status note are planning reference only.
 
 ## Core Entities
 
-### User
+### User → `profiles` table — **implemented (F001)**
 
 Represents an authenticated person in the system.
 
-Suggested fields:
+Fields: `id`, `email`, `display_name`, `global_role` (`super_admin` | `user`), `created_at`, `updated_at`
 
-- `id`
-- `email`
-- `display_name`
-- `global_role`
-- `created_at`
-- `updated_at`
+RLS: users read own row; super_admin reads and updates all.
+Helper: `is_super_admin()` SECURITY DEFINER function used in RLS policies.
 
-### Project
+### Project → `projects` table — **implemented (F002)**
 
 Represents a research workspace managed by a team.
 
-Suggested fields:
+Fields: `id`, `name`, `slug` (unique, server-generated), `description`, `status` (`active` | `archived`), `created_by`, `created_at`, `updated_at`
 
-- `id`
-- `name`
-- `slug`
-- `description`
-- `status`
-- `created_by`
-- `created_at`
-- `updated_at`
+Notes:
+- `project_status` is a Postgres ENUM.
+- Pages route by `id`, not `slug`. Slug is stored for display/future use.
+- Creator is auto-inserted as `project_admin` via `on_project_created` trigger.
 
-### ProjectMembership
+### ProjectMembership → `project_memberships` table — **implemented (F002)**
 
 Represents a user’s role in a project.
 
-Suggested fields:
+Fields: `id`, `project_id`, `user_id`, `role` (`project_admin` | `researcher` | `translator` | `reviewer`), `invited_by`, `created_at`
 
-- `id`
-- `project_id`
-- `user_id`
-- `role`
-- `invited_by`
-- `created_at`
+Notes:
+- `project_role` is a Postgres ENUM.
+- RLS uses `is_project_member(UUID)` and `is_project_admin(UUID)` SECURITY DEFINER helpers to avoid self-referential recursion.
+- `invited_by` is a second FK to `profiles`. Queries that embed `profiles` must disambiguate via `profiles!project_memberships_user_id_fkey`.
 
 ### SourceRecord
 

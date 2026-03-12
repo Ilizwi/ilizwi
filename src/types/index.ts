@@ -88,3 +88,34 @@ export type GlossaryRuleType =
   | "approved_translation"
   | "always_flag"
   | "preserve_original";
+
+export type RecordStatus = "raw" | "in_review" | "approved";
+
+export type SourceRecord = {
+  id: string;
+  project_id: string;
+  source_type: SourceType;
+  source_archive: string;
+  publication_title: string;
+  language: string;
+  date_issued: string | null;
+  date_issued_raw: string | null;
+  page_label: string | null;
+  record_status: RecordStatus;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type FileAsset = {
+  id: string;
+  record_id: string;
+  asset_type: AssetType;
+  storage_path: string;
+  original_filename: string;
+  mime_type: string | null;
+  size_bytes: number | null;
+  is_original: boolean;
+  uploaded_by: string;
+  uploaded_at: string;
+};

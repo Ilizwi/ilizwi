@@ -1,5 +1,6 @@
 import { requireProjectMember } from "@/lib/auth/project-guard";
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 import AddMemberForm from "@/components/projects/AddMemberForm";
 import MemberRoleForm from "@/components/projects/MemberRoleForm";
 import RemoveMemberForm from "@/components/projects/RemoveMemberForm";
@@ -16,6 +17,11 @@ export default async function ProjectDetailPage({
   const { data: memberships } = await supabase
     .from("project_memberships")
     .select("id, user_id, role, profiles!project_memberships_user_id_fkey(id, email, display_name)")
+    .eq("project_id", id);
+
+  const { count: recordCount } = await supabase
+    .from("source_records")
+    .select("*", { count: "exact", head: true })
     .eq("project_id", id);
 
   const callerMembership = (memberships ?? []).find(
@@ -44,6 +50,32 @@ export default async function ProjectDetailPage({
           <span className="text-desk-muted text-xs font-sans">
             Created {new Date(project.created_at).toLocaleDateString()}
           </span>
+        </div>
+      </div>
+
+      {/* Records */}
+      <div className="mb-8">
+        <h2 className="font-serif text-xl text-desk-text tracking-tight mb-4">
+          Records
+        </h2>
+        <div className="flex items-center gap-4">
+          <span className="text-desk-muted text-sm font-sans">
+            {recordCount === 0 ? "No records yet" : `${recordCount} record${recordCount === 1 ? "" : "s"}`}
+          </span>
+          <Link
+            href={`/projects/${id}/records`}
+            className="text-sm font-sans text-desk-text underline underline-offset-2"
+          >
+            View records &rarr;
+          </Link>
+          {(isAdmin || callerMembership?.role === "researcher") && (
+            <Link
+              href={`/projects/${id}/upload`}
+              className="text-sm font-sans text-desk-text underline underline-offset-2"
+            >
+              Upload &rarr;
+            </Link>
+          )}
         </div>
       </div>
 

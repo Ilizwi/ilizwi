@@ -4,23 +4,23 @@
 
 ## Current State
 As of: 2026-03-12
-Completed: F001, F002
-Next: F003 — Manual Archive Upload Intake (P0, Day 1)
+Completed: F001, F002, F003
+Next: F004 — Text Layer Management (P0, Day 1)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
 - F002: Project and Team Management — PASSED (2026-03-12)
+- F003: Manual Archive Upload Intake — PASSED (2026-03-12)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
 ## Next Actions
-- F003: Manual Archive Upload Intake
-  - File upload to Supabase Storage
-  - Required metadata fields (source archive, publication, language, date)
-  - Original file preservation
-  - Record creation linked to project
+- F004: Text Layer Management
+  - OCR / transcription / translation layer storage
+  - Layer status workflow (raw → reviewed → approved)
+  - Separate text layers per record
 
 ---
 
@@ -31,6 +31,16 @@ Next: F003 — Manual Archive Upload Intake (P0, Day 1)
 ### Session 2 — 2026-03-12
 - F001: Authentication and Role-Based Access — implemented, reviewed (3 rounds), merged
 - SQL migration applied; both users provisioned; Vercel env vars set
+
+### Session 4 — 2026-03-12
+- F003: Manual Archive Upload Intake — implemented via parallel agent team, reviewed, committed
+- Migration: source_records + file_assets tables, SQL enums (source_type/record_status/asset_type), RLS via is_project_member SECURITY DEFINER helper, archive-files private bucket (50MB, allowed mime types)
+- Action: uploadRecord with pre-generated UUID, compensating transaction model (storage cleanup on DB failure), explicit role enforcement (project_admin + researcher; translator/reviewer get explicit error), server-side file validation (mime, size, required fields, sanitized filename), upsert: false
+- Types: RecordStatus, SourceRecord, FileAsset added to src/types/index.ts
+- Pages: /projects/[id]/upload (role-gated server component), /projects/[id]/records (table with status badges, empty state, conditional upload button)
+- Project detail: records count + view/upload links
+- Build passes clean, migration applied to remote DB
+- Branch: codex/f003-manual-archive-upload-intake, commit a6316d1
 
 ### Session 3 — 2026-03-12
 - F002: Project and Team Management — implemented, reviewed, fixed, merged

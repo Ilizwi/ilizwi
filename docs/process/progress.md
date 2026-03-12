@@ -9,12 +9,12 @@
 | Current Day | 1 |
 
 ## Day 1: Foundation
-**Status:** Ready to Start
+**Status:** In Progress
 
-- [ ] Project scaffolding complete
-- [ ] CLAUDE.md configured
-- [ ] docs/ structure ready
-- [ ] Authentication flow implemented
+- [x] Project scaffolding complete
+- [x] CLAUDE.md configured
+- [x] docs/ structure ready
+- [x] Authentication flow implemented (code complete — SQL migration + manual AC verification pending)
 - [ ] Project and team management implemented
 - [ ] Manual upload workflow visible
 - [ ] Canonical record creation working
@@ -82,6 +82,12 @@
 - PRD written and approved
 - Feature list created and approved
 - Execution docs prepared
+
+### Session 2 — 2026-03-12
+- F001 Authentication and Role-Based Access implemented
+- Plan written with addendums: RLS recursion fix, null-profile diagnostic logging, promoteUser input validation, SignOutButton as Server Component, AC-to-step mapping
+- Build and typecheck pass clean
+- Awaiting: SQL migration run + manual AC verification to mark F001 passes = true
 
 ---
 

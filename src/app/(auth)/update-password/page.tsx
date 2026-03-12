@@ -1,6 +1,6 @@
-import LoginForm from "@/components/auth/LoginForm";
+import UpdatePasswordForm from "@/components/auth/UpdatePasswordForm";
 
-export default function LoginPage() {
+export default function UpdatePasswordPage() {
   return (
     <main className="min-h-screen bg-vault-bg flex flex-col items-center justify-center gap-8">
       <div className="text-center">
@@ -8,10 +8,10 @@ export default function LoginPage() {
           ILIZWI
         </h1>
         <p className="text-vault-muted text-sm font-sans">
-          Panashe Archival Research Platform
+          Set your password
         </p>
       </div>
-      <LoginForm />
+      <UpdatePasswordForm />
     </main>
   );
 }

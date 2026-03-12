@@ -14,6 +14,29 @@ export type Profile = {
 
 export type ProjectRole = "project_admin" | "researcher" | "translator" | "reviewer";
 
+export type ProjectStatus = "active" | "archived";
+
+export type Project = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  status: ProjectStatus;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProjectMembership = {
+  id: string;
+  project_id: string;
+  user_id: string;
+  role: ProjectRole;
+  invited_by: string | null;
+  created_at: string;
+  profile?: Pick<Profile, "email" | "display_name">;
+};
+
 export type SourceType =
   | "manual_readex"
   | "ibali"

@@ -27,11 +27,11 @@ export async function signOut(): Promise<void> {
   redirect("/login");
 }
 
-export async function promoteUser(formData: FormData): Promise<{ error: string | null }> {
+export async function promoteUser(formData: FormData): Promise<void> {
   const targetUserId = formData.get("targetUserId");
 
   if (!targetUserId || typeof targetUserId !== "string" || targetUserId.trim() === "") {
-    return { error: "Invalid user ID" };
+    throw new Error("Invalid user ID");
   }
 
   const supabase = await createClient();
@@ -40,7 +40,7 @@ export async function promoteUser(formData: FormData): Promise<{ error: string |
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) throw new Error("Not authenticated");
 
   const { data: callerProfile } = await supabase
     .from("profiles")
@@ -49,7 +49,7 @@ export async function promoteUser(formData: FormData): Promise<{ error: string |
     .single();
 
   if (!callerProfile || callerProfile.global_role !== "super_admin") {
-    return { error: "Insufficient permissions" };
+    throw new Error("Insufficient permissions");
   }
 
   const { error } = await supabase
@@ -57,10 +57,11 @@ export async function promoteUser(formData: FormData): Promise<{ error: string |
     .update({ global_role: "super_admin" })
     .eq("id", targetUserId.trim());
 
-  if (error) {
-    return { error: error.message };
-  }
+  if (error) throw new Error(error.message);
+
+  console.log(
+    `[promoteUser] actor=${user.id} (${callerProfile.global_role}) promoted target=${targetUserId.trim()} to super_admin`
+  );
 
   revalidatePath("/admin/users");
-  return { error: null };
 }

@@ -3,11 +3,6 @@ import { promoteUser } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/types";
 
-async function promoteUserAction(formData: FormData): Promise<void> {
-  "use server";
-  await promoteUser(formData);
-}
-
 export default async function AdminUsersPage() {
   await requireSuperAdmin();
 
@@ -74,7 +69,7 @@ export default async function AdminUsersPage() {
                 </td>
                 <td className="px-4 py-3">
                   {user.global_role === "user" && (
-                    <form action={promoteUserAction}>
+                    <form action={promoteUser}>
                       <input
                         type="hidden"
                         name="targetUserId"

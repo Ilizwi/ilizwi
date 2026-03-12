@@ -30,28 +30,17 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const code = request.nextUrl.searchParams.get("code");
-  const type = request.nextUrl.searchParams.get("type");
-
-  // Forward auth callback codes to /auth/callback regardless of landing path
-  if (code && pathname !== "/auth/callback") {
-    const callbackUrl = new URL("/auth/callback", request.url);
-    callbackUrl.searchParams.set("code", code);
-    if (type) callbackUrl.searchParams.set("type", type);
-    return NextResponse.redirect(callbackUrl);
-  }
 
   // Public routes
   const isAuthRoute =
     pathname.startsWith("/login") ||
-    pathname.startsWith("/update-password") ||
     pathname.startsWith("/auth/callback");
 
   if (!user && !isAuthRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (user && isAuthRoute && pathname === "/login") {
+  if (user && pathname === "/login") {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

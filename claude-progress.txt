@@ -4,23 +4,31 @@
 
 ## Current State
 As of: 2026-03-12
-Completed: F001, F002, F003
-Next: F004 — Upload Metadata Enforcement and File Naming (P0, Day 1)
+Completed: F001, F002, F003, F004
+Next: F005 — Canonical Record Creation and Linking (P0, Day 1)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
 - F002: Project and Team Management — PASSED (2026-03-12)
 - F003: Manual Archive Upload Intake — PASSED (2026-03-12)
+- F004: Upload Metadata Enforcement and File Naming — PASSED (2026-03-12)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
 ## Next Actions
-- F004: Upload Metadata Enforcement and File Naming
-  - System-generated file naming convention for stored records
-  - Block upload completion when required metadata is missing (UI + server)
-  - Show normalized internal name alongside original source details on record
+- F005: Canonical Record Creation and Linking
+  - Verify records store source_archive, source identifier, publication, language, date
+  - Verify file assets are stored separately from text-layer content
+  - Verify provenance is immutable/visible after creation
+  - Verify additional text layers can be linked without replacing source file
+
+## Known Limitations / Deferred
+- Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
+  Storage reorganisation to use canonical_ref in path is deferred to a future feature
+- Legacy F003 rows show 'LEGACY-{uuid}' sentinel in canonical_ref (not real refs)
+  Backfilling real refs for legacy rows requires manual disambiguation and is deferred
 
 ---
 
@@ -31,6 +39,20 @@ Next: F004 — Upload Metadata Enforcement and File Naming (P0, Day 1)
 ### Session 2 — 2026-03-12
 - F001: Authentication and Role-Based Access — implemented, reviewed (3 rounds), merged
 - SQL migration applied; both users provisioned; Vercel env vars set
+
+### Session 5 — 2026-03-12
+- F004: Upload Metadata Enforcement and File Naming — implemented via parallel agent team (6 agents, 2 waves), PR reviewed (1 P1 fix + retry loop fix), squash merged to main
+- Migrations: 20260312000003_f004_canonical_ref.sql (2-phase backfill: nullable → UPDATE LEGACY-{id} → NOT NULL → UNIQUE INDEX); 20260312000004_f004_canonical_ref_fix.sql (live-DB fixup for LEGACY sentinel collision bug caught in review)
+- New file: src/lib/records/canonical-ref.ts — pure TS, no directive, shared server+client; generateCanonicalRef(), appendCollisionSuffix(), MAX_COLLISION_RETRIES
+- canonical_ref format: {SOURCE}-{PUB}-{YYYY-MM-DD}[-v{vol}][-i{iss}][-p{page}][-a{article}]
+- Known source alias map: READEX, IBALI, NLSA, WITS; known pub aliases: IMV, ISIG, LB; deterministic fallback normalization for unknown publications
+- Server action: date_issued now required; new fields volume/issue_number/article_label extracted; canonical_ref generated and stored with collision retry (up to -r9)
+- UploadForm: required date, 3 optional new fields, live canonical ref preview using shared helper
+- Records list: canonical_ref column added (font-mono, em-dash fallback)
+- SourceRecord type extended: volume, issue_number, article_label (nullable), canonical_ref (string)
+- Code review P1 finding: DEFAULT 'LEGACY' under unique index collides with >1 existing row — fixed with 2-phase migration + fixup migration; retry loop off-by-one fixed (was ≤10, now ≤9)
+- All 5 PRD test steps satisfied. F004 PASSED.
+- PR #4, commit on main
 
 ### Session 4 — 2026-03-12
 - F003: Manual Archive Upload Intake — implemented via parallel agent team, PR reviewed (2 rounds), squash merged to main

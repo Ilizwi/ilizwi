@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 3 |
-| Remaining | 21 |
+| Completed | 4 |
+| Remaining | 20 |
 | Current Day | 1 |
 
 ## Day 1: Foundation
@@ -17,7 +17,7 @@
 - [x] F001: Authentication and Role-Based Access — PASSED
 - [x] F002: Project and Team Management — PASSED
 - [x] F003: Manual Archive Upload Intake — PASSED
-- [ ] F004: Upload Metadata Enforcement and File Naming
+- [x] F004: Upload Metadata Enforcement and File Naming — PASSED
 - [ ] F005: Canonical Record Creation and Linking
 
 **Deliverable:** Admin shell and foundational upload/record workflow visible on localhost
@@ -100,6 +100,16 @@
 - supabase db push applied to remote
 - PR #2 reviewed (FK disambiguation, auth returns instead of throws, unused helper removed, audit log user_id), all fixed, squash merged to main
 - F002 marked as passed
+
+### Session 5 — 2026-03-12
+- F004 Upload Metadata Enforcement and File Naming — implemented via parallel agent team (6 agents, 2 waves), PR reviewed, 2 fixes applied (migration collision bug, retry loop off-by-one), squash merged to main
+- Migrations: `20260312000003` (2-phase canonical_ref column + unique index) + `20260312000004` (live-DB LEGACY sentinel fixup)
+- New module: `src/lib/records/canonical-ref.ts` — pure TS shared by server action and client form preview; source/pub alias maps, deterministic fallback normalization, collision suffix support
+- `source_records` extended: `volume`, `issue_number`, `article_label`, `canonical_ref` (NOT NULL, unique index)
+- Upload now requires `date_issued`; canonical_ref generated on upload with 23505 collision retry (up to -r9)
+- Records list shows canonical_ref in monospace column
+- Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
+- All 5 PRD test steps satisfied. F004 PASSED.
 
 ### Session 4 — 2026-03-12
 - F003 Manual Archive Upload Intake — implemented via parallel agent team (backend + frontend tracks), PR reviewed, two P1 fixes applied, squash merged to main

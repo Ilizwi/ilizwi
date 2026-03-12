@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-12
 **Branch:** `codex/f004-upload-metadata-enforcement`
-**Status:** IN PROGRESS
+**Status:** PASSED — merged to main (PR #4, squash commit on 2026-03-12)
 
 ---
 

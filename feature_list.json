@@ -61,7 +61,7 @@
         "Confirm the system applies a consistent generated naming convention to the stored file or record.",
         "Confirm the stored record shows both the original source details and the normalized internal naming outcome."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F005",

@@ -101,6 +101,10 @@ export type SourceRecord = {
   date_issued: string | null;
   date_issued_raw: string | null;
   page_label: string | null;
+  volume: string | null;
+  issue_number: string | null;
+  article_label: string | null;
+  canonical_ref: string;
   record_status: RecordStatus;
   created_by: string;
   created_at: string;

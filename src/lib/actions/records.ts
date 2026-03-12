@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/role-guard";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { generateCanonicalRef, appendCollisionSuffix, MAX_COLLISION_RETRIES } from "@/lib/records/canonical-ref";
 
 const ALLOWED_MIME_TYPES = [
   "application/pdf",
@@ -68,6 +69,9 @@ export async function uploadRecord(
   const dateIssued = (formData.get("date_issued") as string)?.trim() || null;
   const dateIssuedRaw = (formData.get("date_issued_raw") as string)?.trim() || null;
   const pageLabel = (formData.get("page_label") as string)?.trim() || null;
+  const volume = (formData.get("volume") as string)?.trim() || null;
+  const issueNumber = (formData.get("issue_number") as string)?.trim() || null;
+  const articleLabel = (formData.get("article_label") as string)?.trim() || null;
 
   // Permission check (server-side, not RLS-only)
   const permError = await assertUploadPermission(supabase, projectId, profile.id);
@@ -77,6 +81,7 @@ export async function uploadRecord(
   if (!sourceArchive) return { error: "Source archive is required" };
   if (!publicationTitle) return { error: "Publication title is required" };
   if (!language) return { error: "Language is required" };
+  if (!dateIssued) return { error: "Date issued is required" };
 
   // File validation
   if (!file || file.size === 0) return { error: "A file is required" };
@@ -86,6 +91,17 @@ export async function uploadRecord(
       error: "Only PDF and image files (JPEG, PNG, TIFF, WebP) are allowed",
     };
   }
+
+  // Generate canonical ref (base — collision suffix appended on retry)
+  const baseRef = generateCanonicalRef({
+    source_type: sourceType,
+    publication_title: publicationTitle,
+    date_issued: dateIssued,
+    page_label: pageLabel,
+    volume,
+    issue_number: issueNumber,
+    article_label: articleLabel,
+  });
 
   // Pre-generate record ID before any I/O
   const recordId = crypto.randomUUID();
@@ -102,21 +118,36 @@ export async function uploadRecord(
     });
   if (uploadError) return { error: `Upload failed: ${uploadError.message}` };
 
-  // Step 2: Insert source_records row (compensate on failure)
-  const { error: recordError } = await supabase.from("source_records").insert({
-    id: recordId,
-    project_id: projectId,
-    source_type: sourceType,
-    source_archive: sourceArchive,
-    publication_title: publicationTitle,
-    language,
-    date_issued: dateIssued || null,
-    date_issued_raw: dateIssuedRaw || null,
-    page_label: pageLabel || null,
-    created_by: profile.id,
-  });
+  // Step 2: Insert source_records row with canonical_ref collision retry
+  let canonicalRef = baseRef;
+  let recordError: { message: string; code?: string } | null = null;
+  for (let attempt = 1; attempt <= MAX_COLLISION_RETRIES; attempt++) {
+    canonicalRef = attempt === 1 ? baseRef : appendCollisionSuffix(baseRef, attempt);
+    const { error } = await supabase.from("source_records").insert({
+      id: recordId,
+      project_id: projectId,
+      source_type: sourceType,
+      source_archive: sourceArchive,
+      publication_title: publicationTitle,
+      language,
+      date_issued: dateIssued,
+      date_issued_raw: dateIssuedRaw || null,
+      page_label: pageLabel || null,
+      volume: volume || null,
+      issue_number: issueNumber || null,
+      article_label: articleLabel || null,
+      canonical_ref: canonicalRef,
+      created_by: profile.id,
+    });
+    if (!error) { recordError = null; break; }
+    if ((error as { code?: string }).code !== "23505") { recordError = error; break; }
+    recordError = error;
+  }
   if (recordError) {
     await supabase.storage.from("archive-files").remove([storagePath]);
+    if ((recordError as { code?: string }).code === "23505") {
+      return { error: "A record with this exact metadata already exists. Add volume, issue, page, or article label to disambiguate." };
+    }
     return { error: `Record creation failed: ${recordError.message}` };
   }
 
@@ -138,7 +169,7 @@ export async function uploadRecord(
   }
 
   console.log(
-    `[uploadRecord] actor=${profile.id} uploaded record=${recordId} file=${safeFilename} (${file.type}, ${file.size}B) to project=${projectId}`
+    `[uploadRecord] actor=${profile.id} uploaded record=${recordId} ref=${canonicalRef} file=${safeFilename} (${file.type}, ${file.size}B) to project=${projectId}`
   );
 
   revalidatePath(`/projects/${projectId}/records`);

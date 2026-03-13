@@ -4,9 +4,9 @@
 
 ## Current State
 As of: 2026-03-13
-Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013
-Day 1 complete. Day 2 complete. Day 3 in progress (2/5 features done).
-Next: F014 — Translation Editor and Correction Workflow (P0, Day 3)
+Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014
+Day 1 complete. Day 2 complete. Day 3 in progress (3/5 features done).
+Next: F015 — Translation Memory (P0, Day 3)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -27,7 +27,7 @@ Next: F014 — Translation Editor and Correction Workflow (P0, Day 3)
 - Readex permissions response pending
 
 ## Next Actions
-- F014: Translation Editor and Correction Workflow (P0, Day 3) — next unblocked P0
+- F015: Translation Memory (P0, Day 3) — next unblocked P0
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -36,6 +36,17 @@ Next: F014 — Translation Editor and Correction Workflow (P0, Day 3)
   This cleanup is now part of F005 rather than a separate debt sprint
 
 ---
+
+### Session 15 — 2026-03-13
+- F014: Translation Editor and Correction Workflow — implemented via 3-agent parallel team, clean build, PR created
+- Migration `20260313000006`: `text_layers_insert_translator_correction` INSERT policy — scoped to `layer_type = 'corrected_translation'` and `translator` role via `source_records` + `project_memberships` join (mirrors existing contributor policy shape; no new SQL helpers)
+- New server action `src/lib/actions/save-translation-correction.ts`: session-bound client (RLS enforced); validates `sourceLayerId` is a `machine_translation` layer; derives `record_id`, `project_id`, `language` server-side (language not accepted as client input); allows `project_admin`, `researcher`, `translator` roles; inserts `corrected_translation` with `source_layer_id` (provenance link, not supersession); audit log; `revalidatePath`
+- New component `src/components/records/TranslationEditorForm.tsx`: mirrors `TranscriptionEditorForm`; `sourceLayerId` hidden input only; language displayed read-only (not submitted); `useActionState(saveTranslationCorrection, ...)`; auto-close on success via `useEffect` + submitted ref
+- Modified `src/components/records/TextLayerCard.tsx`: `canCorrectTranslation` required prop; `showTranslationForm` state; "Correct Translation" button on active `machine_translation` layers; form state priority: TranslationEditorForm > TranscriptionEditorForm > CreateLayerVersionForm; action section visible when `canAddLayer || canCorrectTranslation`
+- Modified `src/app/(app)/projects/[id]/records/[recordId]/page.tsx`: `canCorrectTranslation` derived from same membership query (no extra DB call); includes `translator` role alongside `project_admin` and `researcher`; passed to all `TextLayerCard` instances
+- Both layers (MT draft + corrected_translation) remain active — no supersession, no cross-type linking; both accessible on record reopen
+- Build passes clean (no warnings). All 5 PRD test steps satisfied. F014 PASSED.
+- plan/2026-03-13-f014-translation-editor-correction-workflow.md written (addendums applied)
 
 ### Session 14 — 2026-03-13
 - F013: Machine Translation Draft Generation — implemented via 3-agent parallel team, code reviewed (3 findings fixed), squash merged to main (PR #13)

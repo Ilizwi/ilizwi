@@ -105,17 +105,27 @@ export default async function RecordDetailPage({
   );
 
   // Permission: can add text layer?
+  // canCorrectTranslation is membership-only (no super_admin bypass) —
+  // the saveTranslationCorrection action is membership-only and the
+  // text_layers SELECT policy is also membership-only. Initialising from
+  // super_admin would create a read/write boundary mismatch (same issue
+  // removed in F012/F013).
   let canAddLayer = profile.global_role === "super_admin";
-  if (!canAddLayer) {
+  let canCorrectTranslation = false;
+  if (!canAddLayer || !canCorrectTranslation) {
     const { data: membership } = await supabase
       .from("project_memberships")
       .select("role")
       .eq("project_id", id)
       .eq("user_id", profile.id)
       .single();
-    canAddLayer =
+    canAddLayer = canAddLayer ||
       membership?.role === "project_admin" ||
       membership?.role === "researcher";
+    canCorrectTranslation =
+      membership?.role === "project_admin" ||
+      membership?.role === "researcher" ||
+      membership?.role === "translator";
   }
 
   const statusBadge = (status: string) => {
@@ -212,6 +222,7 @@ export default async function RecordDetailPage({
                   layer={l}
                   isSuperseded={false}
                   canAddLayer={canAddLayer}
+                  canCorrectTranslation={canCorrectTranslation}
                   recordId={recordId}
                 />
               ))}
@@ -229,6 +240,7 @@ export default async function RecordDetailPage({
                       layer={l}
                       isSuperseded={true}
                       canAddLayer={canAddLayer}
+                      canCorrectTranslation={canCorrectTranslation}
                       recordId={recordId}
                     />
                   ))}

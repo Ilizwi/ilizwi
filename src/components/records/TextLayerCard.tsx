@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { TextLayer, LayerType, LayerStatus } from "@/types";
 import CreateLayerVersionForm from "./CreateLayerVersionForm";
 import TranscriptionEditorForm from "./TranscriptionEditorForm";
+import TranslationEditorForm from "./TranslationEditorForm";
 import UpdateLayerStatusForm from "./UpdateLayerStatusForm";
 import { PROVIDER_DISPLAY_LABELS } from "@/lib/translation/translation-constants";
 
@@ -28,16 +29,19 @@ export default function TextLayerCard({
   layer,
   isSuperseded,
   canAddLayer,
+  canCorrectTranslation,
   recordId,
 }: {
   layer: TextLayer;
   isSuperseded: boolean;
   canAddLayer: boolean;
+  canCorrectTranslation: boolean;
   recordId: string;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [showVersionForm, setShowVersionForm] = useState(false);
   const [showTranscribeForm, setShowTranscribeForm] = useState(false);
+  const [showTranslationForm, setShowTranslationForm] = useState(false);
 
   return (
     <div className={`border border-desk-border rounded-[2px] p-4 ${isSuperseded ? "opacity-60" : ""}`}>
@@ -105,10 +109,17 @@ export default function TextLayerCard({
         </div>
       )}
 
-      {/* Action forms — Edit/Transcribe button for source layers + Create New Version for all */}
-      {canAddLayer && !isSuperseded && (
+      {/* Action forms — Edit/Transcribe, Correct Translation, Create New Version */}
+      {(canAddLayer || canCorrectTranslation) && !isSuperseded && (
         <div className="mt-4 space-y-2">
-          {showTranscribeForm ? (
+          {showTranslationForm ? (
+            <TranslationEditorForm
+              sourceContent={layer.content}
+              sourceLanguage={layer.language}
+              sourceLayerId={layer.id}
+              onClose={() => setShowTranslationForm(false)}
+            />
+          ) : showTranscribeForm ? (
             <TranscriptionEditorForm
               recordId={recordId}
               sourceContent={layer.content}
@@ -125,20 +136,30 @@ export default function TextLayerCard({
             />
           ) : (
             <div className="flex gap-2 flex-wrap">
-              {(layer.layer_type === "source_ocr" || layer.layer_type === "source_transcription") && (
+              {canAddLayer && (layer.layer_type === "source_ocr" || layer.layer_type === "source_transcription") && (
                 <button
-                  onClick={() => { setShowTranscribeForm(true); setShowVersionForm(false); }}
+                  onClick={() => { setShowTranscribeForm(true); setShowVersionForm(false); setShowTranslationForm(false); }}
                   className="text-xs font-sans px-3 py-1.5 border border-desk-border rounded-[2px] text-desk-muted hover:text-desk-text hover:border-desk-text transition-colors"
                 >
                   Edit / Transcribe
                 </button>
               )}
-              <button
-                onClick={() => { setShowVersionForm(true); setShowTranscribeForm(false); }}
-                className="text-xs font-sans px-3 py-1.5 border border-desk-border rounded-[2px] text-desk-muted hover:text-desk-text hover:border-desk-text transition-colors"
-              >
-                Create New Version
-              </button>
+              {layer.layer_type === "machine_translation" && canCorrectTranslation && (
+                <button
+                  onClick={() => { setShowTranslationForm(true); setShowTranscribeForm(false); setShowVersionForm(false); }}
+                  className="text-xs font-sans px-3 py-1.5 border border-desk-border rounded-[2px] text-desk-muted hover:text-desk-text hover:border-desk-text transition-colors"
+                >
+                  Correct Translation
+                </button>
+              )}
+              {canAddLayer && (
+                <button
+                  onClick={() => { setShowVersionForm(true); setShowTranscribeForm(false); setShowTranslationForm(false); }}
+                  className="text-xs font-sans px-3 py-1.5 border border-desk-border rounded-[2px] text-desk-muted hover:text-desk-text hover:border-desk-text transition-colors"
+                >
+                  Create New Version
+                </button>
+              )}
             </div>
           )}
         </div>

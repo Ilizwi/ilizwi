@@ -35,15 +35,17 @@ Next: F007 — NLSA Source Integration (P0, Day 2)
 ---
 
 ### Session 7 — 2026-03-13
-- F006: Ibali Source Integration — implemented via parallel agent team (3-wave, 5 agents), code reviewed, squash merged to main (PR #6)
-- Migration `20260313000003`: source_identifier + source_url on source_records; partial unique index (dedupe invariant); source_url on file_assets; storage_path made nullable; location CHECK constraint (exactly one of storage_path/source_url)
-- New adapter: src/lib/sources/ibali.ts — Omeka S property helper, typed fetch results, 10s AbortSignal timeout, 3 error shapes
-- Server action: importFromIbali — idempotency check, assertImportPermission (mirrors existing pattern), canonical ref collision retry, compensating rollback on partial failure, accepts ID or full URL
-- Import page: /projects/[id]/import/ibali with role-gated access; IbaliImportForm with useActionState
+- F006: Ibali Source Integration — implemented via parallel agent team (3-wave, 5 agents), code reviewed (1 P1 fix), squash merged to main (PR #6)
+- Migration `20260313000003`: source_identifier + source_url on source_records; partial unique index (dedupe invariant); source_url on file_assets; storage_path made nullable; location CHECK constraint (exactly one of storage_path/source_url per row)
+- New adapter: src/lib/sources/ibali.ts — Omeka S property helper, typed fetch results, 10s AbortSignal timeout, 3 error shapes (not_found/timeout/network)
+- Server action: importFromIbali — idempotency pre-check, assertImportPermission (mirrors existing pattern), canonical ref collision retry, compensating rollback on any partial child failure, accepts raw ID or full Ibali URL
+- Review P1 fix: removed new Date() fallback from canonical ref generation; import now rejects items with no dcterms:date rather than inventing provenance
+- Import page: /projects/[id]/import/ibali with role-gated access; translator/reviewer see inline access-denied (not a redirect)
+- IbaliImportForm: useActionState, success shows record link, error inline
 - Project detail: Import from Ibali link (same gate as Upload)
-- Types: SourceRecord + FileAsset extended; storage_path nullable
-- supabase db push applied; build passes
-- All 5 PRD steps satisfied + 4 addendum criteria (idempotency, location invariant, compensating rollback, timeout handling). F006 PASSED.
+- Types: SourceRecord extended with source_identifier/source_url; FileAsset storage_path nullable, source_url added
+- supabase db push applied; build passes clean
+- All 5 PRD steps + 4 addendum criteria (idempotency, location invariant, compensating rollback, timeout/error shaping) satisfied. F006 PASSED.
 
 ### Session 6 — 2026-03-13
 - F005: Canonical Record Creation — implemented via parallel agent team (3 agents), code reviewed, 2 fixes applied, squash merged to main (PR #5)

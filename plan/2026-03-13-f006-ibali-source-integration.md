@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-13
 **Branch:** `codex/f006-ibali-source-integration`
-**Status:** APPROVED WITH ADDENDUMS
+**Status:** MERGED — PASSED (PR #6, squash merged to main 2026-03-13)
 
 ---
 
@@ -252,6 +252,22 @@ Add "Import from Ibali →" link in the Records section. Use same gate as Upload
 9. Translator/reviewer: page shows access-denied state; direct server action call returns permission error
 
 ---
+
+## Post-Review Fix (applied before merge)
+
+**P1 — Do not synthesize date into provenance** (reviewer finding, confidence 0.98):
+
+Original code used `mapped.date_issued ?? new Date().toISOString().slice(0, 10)` as the `date_issued` input to `generateCanonicalRef`. This created a canonical ref containing today's date while still inserting `null` into `source_records.date_issued` — inconsistent provenance, breaks F004 invariant.
+
+Fix: added an explicit guard after `mapIbaliItem`:
+```typescript
+if (!mapped.date_issued) {
+  return {
+    error: `Ibali item ${itemId} does not include a date (dcterms:date). Cannot create a canonical record without an issue date.`,
+  };
+}
+```
+`canonical_ref` and `source_records.date_issued` now always use the same real upstream value or the import is rejected.
 
 ## Verification Checklist
 

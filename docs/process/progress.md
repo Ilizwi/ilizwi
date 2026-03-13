@@ -112,14 +112,15 @@
 - All 5 PRD test steps satisfied. F004 PASSED.
 
 ### Session 7 — 2026-03-13
-- F006: Ibali Source Integration — implemented via parallel agent team (3-wave, 5 agents), squash merged to main (PR #6)
-- Migration `20260313000003`: `source_identifier` + `source_url` added to `source_records`; partial unique index for dedupe invariant `(project_id, source_type, source_identifier) WHERE source_identifier IS NOT NULL`; `source_url` added to `file_assets`; `storage_path` made nullable; location CHECK constraint ensures each asset has exactly one of `storage_path` or `source_url`
-- New module: `src/lib/sources/ibali.ts` — pure TS adapter, Omeka S property helper, `fetchIbaliItem`, `fetchIbaliMedia`, `mapIbaliItem`, `extractMediaRefs`; all fetches use `AbortSignal.timeout(10_000)` with three typed error shapes (not_found / timeout / network)
-- Server action `importFromIbali`: idempotency check before insert; assertImportPermission mirrors existing permission guard pattern exactly; canonical ref collision retry; compensating rollback (file_assets → source_records) if any child write fails; accepts raw item ID or full Ibali URL
-- Import page: `/projects/[id]/import/ibali` — role-gated server component; translator/reviewer see access-denied inline
-- `IbaliImportForm`: useActionState, success shows record link, error shown inline
-- Project detail: "Import from Ibali →" link added to Records section (same role gate as Upload)
-- Types updated: `source_identifier`, `source_url` on `SourceRecord`; `storage_path` nullable, `source_url` added on `FileAsset`
+- F006: Ibali Source Integration — implemented via parallel agent team (3-wave, 5 agents), code reviewed (P1 fix: removed synthetic date fallback), squash merged to main (PR #6)
+- Migration `20260313000003`: `source_identifier` + `source_url` on `source_records`; partial unique index `(project_id, source_type, source_identifier) WHERE source_identifier IS NOT NULL`; `source_url` on `file_assets`; `storage_path` nullable; `file_assets_location_check` CHECK constraint (exactly one of storage_path/source_url)
+- Adapter `src/lib/sources/ibali.ts`: Omeka S property helper, `fetchIbaliItem`/`fetchIbaliMedia` with `AbortSignal.timeout(10_000)`, typed `IbaliFetchResult` with three error shapes
+- Action `importFromIbali`: idempotency pre-check; assertImportPermission (local copy of existing pattern); canonical ref collision retry; compensating rollback on any partial child failure; rejects items with no dcterms:date
+- Review P1 fix: `new Date()` fallback removed — import fails with clear error if Ibali provides no date, preserving provenance invariant
+- Import page `/projects/[id]/import/ibali`: role-gated; translator/reviewer see inline access-denied
+- `IbaliImportForm`: useActionState, success/error state, record link on success
+- Project detail: "Import from Ibali →" link (same gate as Upload)
+- Types: `SourceRecord` + `FileAsset` extended; `storage_path` nullable
 - `supabase db push` applied; build passes clean
 - All 5 PRD steps + 4 addendum criteria satisfied. F006 PASSED.
 

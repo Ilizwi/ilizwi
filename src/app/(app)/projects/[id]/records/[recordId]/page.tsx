@@ -5,6 +5,7 @@ import Link from "next/link";
 import AddTextLayerForm from "@/components/records/AddTextLayerForm";
 import type { SourceRecord, FileAsset, TextLayer, EnrichedFileAsset } from "@/types";
 import FileViewerSection from "@/components/records/FileViewerSection";
+import ExtractTextSection from "@/components/records/ExtractTextSection";
 
 export default async function RecordDetailPage({
   params,
@@ -35,6 +36,11 @@ export default async function RecordDetailPage({
     .order("uploaded_at", { ascending: true });
 
   const typedAssets = (fileAssets ?? []) as FileAsset[];
+
+  // PDF extraction eligibility — only for records with a locally-stored PDF
+  const hasPdfAsset = typedAssets.some(
+    (a) => a.mime_type === "application/pdf" && a.storage_path !== null
+  );
 
   // Enrich assets with view URLs
   // - storage_path assets: generate 1-hour signed URL from Supabase storage
@@ -68,6 +74,11 @@ export default async function RecordDetailPage({
     .order("created_at", { ascending: true });
 
   const typedLayers = (textLayers ?? []) as TextLayer[];
+
+  // Idempotency hint — does a file_extract source_ocr layer already exist?
+  const hasExistingSourceOcr = typedLayers.some(
+    (l) => l.layer_type === "source_ocr" && l.source_method === "file_extract"
+  );
 
   // Permission: can add text layer?
   let canAddLayer = profile.global_role === "super_admin";
@@ -228,6 +239,14 @@ export default async function RecordDetailPage({
           </div>
         )}
 
+        {canAddLayer && (
+          <ExtractTextSection
+            recordId={recordId}
+            hasPdfAsset={hasPdfAsset}
+            hasExistingSourceOcr={hasExistingSourceOcr}
+            canExtract={canAddLayer}
+          />
+        )}
         {canAddLayer && <AddTextLayerForm recordId={recordId} projectId={id} />}
       </section>
     </div>

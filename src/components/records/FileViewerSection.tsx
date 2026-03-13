@@ -15,6 +15,18 @@ function isSafeUrl(url: string | null): url is string {
   return url.startsWith("https://") || url.startsWith("http://");
 }
 
+// Only embed PDFs from known, controlled asset origins.
+// Non-allowlisted URLs render as open-link fallback instead of iframe.
+const TRUSTED_IFRAME_ORIGINS: string[] = [
+  process.env.NEXT_PUBLIC_SUPABASE_URL, // Supabase storage signed URLs
+  "https://cdm21048.contentdm.oclc.org", // NLSA ContentDM
+  "https://ibali.uct.ac.za",             // Ibali
+].filter(Boolean) as string[];
+
+function isTrustedOrigin(url: string): boolean {
+  return TRUSTED_IFRAME_ORIGINS.some((origin) => url.startsWith(origin));
+}
+
 export default function FileViewerSection({
   assets,
 }: {
@@ -121,11 +133,11 @@ export default function FileViewerSection({
                 );
               }
 
-              if (activeAsset.mime_type === "application/pdf") {
-              // Note: Signed URLs expire after ~1 hour. If the viewer stays open
-              // past expiry, the iframe shows a broken/auth-error state.
-              // This is an acceptable tradeoff — no auto-refresh logic needed.
-              return (
+              if (activeAsset.mime_type === "application/pdf" && isTrustedOrigin(url)) {
+                // Note: Signed URLs expire after ~1 hour. If the viewer stays open
+                // past expiry, the iframe shows a broken/auth-error state.
+                // This is an acceptable tradeoff — no auto-refresh logic needed.
+                return (
                   <iframe
                     src={url}
                     className="h-[600px] w-full border-0"

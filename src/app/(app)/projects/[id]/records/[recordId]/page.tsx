@@ -50,7 +50,7 @@ export default async function RecordDetailPage({
         return {
           ...asset,
           view_url: data?.signedUrl ?? null,
-          view_url_error: error?.message ?? null,
+          view_url_error: error ? "Preview unavailable" : null,
         };
       }
       if (asset.source_url) {

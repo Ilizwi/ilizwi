@@ -4,8 +4,8 @@
 
 ## Current State
 As of: 2026-03-13
-Completed: F001, F002, F003, F004, F005, F006, F007, F009
-Next: F010 — OCR and Source Text Acquisition Layer (P0, Day 2)
+Completed: F001, F002, F003, F004, F005, F006, F007, F009, F010
+Next: F011 — Text Layer Management (P0, Day 2)
 Skipped (sequencing): F008 — Wits Supplementary Source Intake (P1, Day 2) — deferred
 
 ## Completed Features
@@ -17,6 +17,7 @@ Skipped (sequencing): F008 — Wits Supplementary Source Intake (P1, Day 2) — 
 - F006: Ibali Source Integration — PASSED (2026-03-13)
 - F007: NLSA Source Integration — PASSED (2026-03-13)
 - F009: Source File Viewer — PASSED (2026-03-13)
+- F010: OCR and Source Text Acquisition Layer — PASSED (2026-03-13)
 
 ## Blockers
 - Final product name pending
@@ -37,6 +38,19 @@ Skipped (sequencing): F008 — Wits Supplementary Source Intake (P1, Day 2) — 
   This cleanup is now part of F005 rather than a separate debt sprint
 
 ---
+
+### Session 10 — 2026-03-13
+- F010: OCR and Source Text Acquisition Layer — implemented on branch codex/f010-ocr-source-text-acquisition
+- No DB migration required — existing text_layers table + types (source_ocr, file_extract) already support this
+- New utility: src/lib/sources/text-extractor.ts — uses pdf-parse v2 PDFParse class; discriminated ExtractResult type (ok/unsupported_mime_type/empty_content/parse_error); internal errors only logged, never surfaced to caller
+- New server action: src/lib/actions/extract-text.ts — derives projectId from record (no client trust); V1 rule: first uploaded PDF only (logs if multiple); content-hash no-op (sha256 compare avoids duplicate rows for unchanged PDFs); supersedes_layer_id for versioning; all internal errors sanitized to fixed safe strings; revalidatePath after insert
+- New component: src/components/records/ExtractTextSection.tsx — "use client"; useActionState; renders notice for non-PDF assets; renders button for PDF assets with canExtract gate; success shows layer ID; re-extract hint when source_ocr already exists
+- Record detail page wired: hasPdfAsset computed from typedAssets; hasExistingSourceOcr computed from typedLayers; ExtractTextSection rendered before AddTextLayerForm under canAddLayer gate
+- No Jest setup added (addendum: too much tooling surface for V1); feature verified via typecheck + build + manual test
+- blobToBuffer not exported (addendum: inlined as Buffer.from(await blob.arrayBuffer()))
+- Build, typecheck, lint all pass.
+- plan/2026-03-13-f010-ocr-source-text-acquisition.md written
+- F010 PASSED.
 
 ### Session 9 — 2026-03-13
 - F009: Source File Viewer — implemented via parallel agent team (2 agents), squash merged to main (PR #8)

@@ -151,7 +151,7 @@
         "Run the text acquisition process and confirm a source text layer is created.",
         "Confirm the record clearly distinguishes the source-acquired text layer from later corrected text layers."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F011",

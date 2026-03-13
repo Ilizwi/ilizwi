@@ -7,6 +7,7 @@ import type { SourceRecord, FileAsset, TextLayer, EnrichedFileAsset } from "@/ty
 import FileViewerSection from "@/components/records/FileViewerSection";
 import ExtractTextSection from "@/components/records/ExtractTextSection";
 import TextLayerCard from "@/components/records/TextLayerCard";
+import GenerateTranslationSection from "@/components/records/GenerateTranslationSection";
 
 export default async function RecordDetailPage({
   params,
@@ -92,6 +93,15 @@ export default async function RecordDetailPage({
   // Idempotency hint — does a file_extract source_ocr layer already exist?
   const hasExistingSourceOcr = typedLayers.some(
     (l) => l.layer_type === "source_ocr" && l.source_method === "file_extract"
+  );
+
+  // Machine translation eligibility flags
+  const ELIGIBLE_LAYER_TYPES_FOR_MT = ['corrected_transcription', 'source_transcription', 'source_ocr'];
+  const hasEligibleLayer = typedLayers.some(
+    (l) => ELIGIBLE_LAYER_TYPES_FOR_MT.includes(l.layer_type) && !supersededIds.has(l.id)
+  );
+  const hasActiveMtLayer = typedLayers.some(
+    (l) => l.layer_type === 'machine_translation' && !supersededIds.has(l.id)
   );
 
   // Permission: can add text layer?
@@ -234,6 +244,14 @@ export default async function RecordDetailPage({
             hasPdfAsset={hasPdfAsset}
             hasExistingSourceOcr={hasExistingSourceOcr}
             canExtract={canAddLayer}
+          />
+        )}
+        {canAddLayer && (
+          <GenerateTranslationSection
+            recordId={recordId}
+            canGenerate={canAddLayer}
+            hasEligibleLayer={hasEligibleLayer}
+            hasActiveMtLayer={hasActiveMtLayer}
           />
         )}
         {canAddLayer && <AddTextLayerForm recordId={recordId} projectId={id} />}

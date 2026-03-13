@@ -144,4 +144,6 @@ export type TextLayer = {
   created_by: string;
   created_at: string;
   updated_at: string;
+  source_layer_id: string | null;
+  translation_provider: string | null;
 };

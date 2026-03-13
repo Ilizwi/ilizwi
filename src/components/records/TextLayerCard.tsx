@@ -5,6 +5,7 @@ import type { TextLayer, LayerType, LayerStatus } from "@/types";
 import CreateLayerVersionForm from "./CreateLayerVersionForm";
 import TranscriptionEditorForm from "./TranscriptionEditorForm";
 import UpdateLayerStatusForm from "./UpdateLayerStatusForm";
+import { PROVIDER_DISPLAY_LABELS } from "@/lib/translation/translation-constants";
 
 const LAYER_TYPE_LABELS: Record<LayerType, string> = {
   source_ocr: "Source OCR",
@@ -62,6 +63,9 @@ export default function TextLayerCard({
         <span>Source: {layer.source_method.replace(/_/g, " ")}</span>
         <span>Language: {layer.language ?? "inherited from record"}</span>
         <span>Added: {new Date(layer.created_at).toLocaleDateString()}</span>
+        {layer.translation_provider && (
+          <span>Provider: {PROVIDER_DISPLAY_LABELS[layer.translation_provider] ?? layer.translation_provider}</span>
+        )}
       </div>
 
       {/* Supersedes reference */}

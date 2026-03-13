@@ -63,8 +63,10 @@ function nlsaErrorMessage(
 }
 
 // --- Date validation ---
-// Accept YYYY, YYYY-MM, or YYYY-MM-DD. Reject anything else.
-const ISO_DATE_PATTERN = /^\d{4}(-\d{2}(-\d{2})?)?$/;
+// Require full YYYY-MM-DD to satisfy the canonical-ref contract (CanonicalRefFields.date_issued)
+// and the source_records.date_issued date column. Partial dates (YYYY, YYYY-MM) are rejected —
+// they would produce malformed canonical refs and depend on DB coercion.
+const FULL_ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function validateNlsaDate(
   dateRaw: string | null,
@@ -73,13 +75,13 @@ function validateNlsaDate(
   if (!dateRaw) {
     return {
       valid: false,
-      error: `NLSA item ${ref} does not include a date. Cannot create a canonical record without an issue date.`,
+      error: `NLSA item ${ref} does not include a date. Cannot create a canonical record without a full issue date (YYYY-MM-DD).`,
     };
   }
-  if (!ISO_DATE_PATTERN.test(dateRaw)) {
+  if (!FULL_ISO_DATE_PATTERN.test(dateRaw)) {
     return {
       valid: false,
-      error: `NLSA item ${ref} has a date in an unrecognised format ("${dateRaw}"). Acceptable formats are YYYY, YYYY-MM, or YYYY-MM-DD. Cannot create a canonical record without a parseable date.`,
+      error: `NLSA item ${ref} has a date in an unrecognised format ("${dateRaw}"). A full YYYY-MM-DD date is required. Cannot create a canonical record without a parseable issue date.`,
     };
   }
   return { valid: true, date: dateRaw };

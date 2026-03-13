@@ -112,16 +112,12 @@
 - All 5 PRD test steps satisfied. F004 PASSED.
 
 ### Session 6 — 2026-03-13
-- F005 Canonical Record Creation — implemented via parallel agent team (3 agents), quality gate passed, all 5 PRD test steps satisfied
-- Migration: `20260313000001_f005_text_layers.sql` — text_layers table with idempotent enum creation; RLS SELECT (project members), INSERT (super_admin/project_admin/researcher), UPDATE status-only (creator/super_admin) with immutability comment; updated_at trigger
-- Types: `TextLayer` added to `src/types/index.ts`
-- Server action: `src/lib/actions/text-layers.ts` — `addTextLayer` with permission symmetry (project_admin + researcher allowed, translator/reviewer explicitly denied), input validation, audit log, revalidatePath
-- Detail page: `/projects/[id]/records/[recordId]` — combined tenancy guard validates both project_id and recordId in one query (prevents cross-project leakage); provenance read-only panel, file assets table, text layers table with type/status badges, AddTextLayerForm gated to allowed roles
-- Component: `AddTextLayerForm` client component — useActionState, layer_type select, content textarea, optional language input, source_method select, error display
-- Records list: canonical_ref cell now links to detail page
-- Addendums applied: immutability comment on UPDATE policy; language stays null (not inherited at action level); translator/reviewer denied with friendly error; tenancy guard tightened; action in dedicated text-layers.ts file
-- `supabase db push` needed to apply migration to remote
-- F005 PASSED.
+- F005 Canonical Record Creation — implemented via parallel agent team (3 agents), code reviewed (1 P1 finding), 2 fixes applied, squash merged to main (PR #5)
+- Migration `20260313000001`: text_layers table, idempotent enums (layer_type / layer_status / layer_source_method), RLS SELECT/INSERT, updated_at trigger
+- Migration `20260313000002`: compensating — drops UPDATE policy removed in review
+- Review P1 fix: no UPDATE policy ships with F005; content immutability enforced at application layer; supersedes_layer_id used for versioning; status-only UPDATE deferred to a later feature with DB-level column enforcement and current-membership check
+- Server action tightened: `addTextLayer` derives project_id from source_records on server (not hidden form field)
+- All 5 PRD test steps satisfied. F005 PASSED. Day 1 complete.
 
 ### Session 4 — 2026-03-12
 - F003 Manual Archive Upload Intake — implemented via parallel agent team (backend + frontend tracks), PR reviewed, two P1 fixes applied, squash merged to main

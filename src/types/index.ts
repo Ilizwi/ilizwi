@@ -105,6 +105,8 @@ export type SourceRecord = {
   issue_number: string | null;
   article_label: string | null;
   canonical_ref: string;
+  source_identifier: string | null;
+  source_url: string | null;
   record_status: RecordStatus;
   created_by: string;
   created_at: string;
@@ -115,7 +117,8 @@ export type FileAsset = {
   id: string;
   record_id: string;
   asset_type: AssetType;
-  storage_path: string;
+  storage_path: string | null;
+  source_url: string | null;
   original_filename: string;
   mime_type: string | null;
   size_bytes: number | null;

@@ -76,6 +76,14 @@ export default async function ProjectDetailPage({
               Upload &rarr;
             </Link>
           )}
+          {(isAdmin || callerMembership?.role === "researcher") && (
+            <Link
+              href={`/projects/${id}/import/ibali`}
+              className="text-sm font-sans text-desk-text underline underline-offset-2"
+            >
+              Import from Ibali &rarr;
+            </Link>
+          )}
         </div>
       </div>
 

@@ -3,34 +3,47 @@
 # Format: [Date] [Session] - Notes
 
 ## Current State
-As of: 2026-03-12
-Completed: F001, F002, F003, F004
-Next: F005 — Canonical Record Creation and Linking (P0, Day 1)
+As of: 2026-03-13
+Completed: F001, F002, F003, F004, F005
+Next: F006 — Ibali Source Integration (P0, Day 2)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
 - F002: Project and Team Management — PASSED (2026-03-12)
 - F003: Manual Archive Upload Intake — PASSED (2026-03-12)
 - F004: Upload Metadata Enforcement and File Naming — PASSED (2026-03-12)
+- F005: Canonical Record Creation — PASSED (2026-03-13)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
 ## Next Actions
-- F005: Canonical Record Creation and Linking
-  - Verify records store source_archive, source identifier, publication, language, date
-  - Verify file assets are stored separately from text-layer content
-  - Verify provenance is immutable/visible after creation
-  - Verify additional text layers can be linked without replacing source file
+- F006: Ibali Source Integration (P0, Day 2)
+  - Query Ibali API for a known Isigidimi issue
+  - Retrieve issue-level metadata and linked transcription file references
+  - Capture extracted transcription text into the record workflow
+  - Save imported record as canonical internal record with Ibali provenance
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
   Storage reorganisation to use canonical_ref in path is deferred to a future feature
 - Legacy F003 rows show 'LEGACY-{uuid}' sentinel in canonical_ref (not real refs)
-  Backfilling real refs for legacy rows requires manual disambiguation and is deferred
+  This cleanup is now part of F005 rather than a separate debt sprint
 
 ---
+
+### Session 6 — 2026-03-13
+- F005: Canonical Record Creation — implemented via parallel agent team (3 agents), quality gate passed
+- Migration: 20260313000001_f005_text_layers.sql — text_layers table, idempotent enums (layer_type, layer_status, layer_source_method), RLS (SELECT for project members, INSERT for super_admin/project_admin/researcher, UPDATE status-only for creator/super_admin), updated_at trigger
+- Types: TextLayer added to src/types/index.ts
+- Server action: src/lib/actions/text-layers.ts — addTextLayer with permission guard (project_admin/researcher only), validation, audit log, revalidatePath
+- Detail page: /projects/[id]/records/[recordId] — combined tenancy guard (project_id + recordId in one query), provenance panel, file assets table, text layers table with badges, AddTextLayerForm gated by role
+- Component: AddTextLayerForm client component with useActionState, all four fields (layer_type, content, language, source_method)
+- Records list: canonical_ref cell now links to detail page
+- Addendums applied: immutability comment on UPDATE policy; no general content-edit; language null (not inherited at action level); translator/reviewer explicitly denied; cross-project tenancy guard tightened; action in dedicated text-layers.ts not records.ts
+- supabase db push needed to apply migration to remote
+- All 5 PRD test steps satisfied. F005 PASSED.
 
 ### Session 1 — 2026-03-12
 - Initial project docs, PRD, feature list, architecture docs created

@@ -123,3 +123,17 @@ export type FileAsset = {
   uploaded_by: string;
   uploaded_at: string;
 };
+
+export type TextLayer = {
+  id: string;
+  record_id: string;
+  layer_type: LayerType;
+  content: string;
+  language: string | null;
+  status: LayerStatus;
+  source_method: LayerSourceMethod;
+  supersedes_layer_id: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};

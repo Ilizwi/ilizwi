@@ -58,6 +58,7 @@ Last updated: 2026-03-12
   - or mixed with parent-child relationships
 - What metadata fields are mandatory at upload time?
 - What naming convention should the system enforce?
+- How should unresolved legacy records be handled during canonical-record rollout?
 
 ### Transcription workflow
 
@@ -96,6 +97,15 @@ Last updated: 2026-03-12
 - OCR quality may be poor enough to require strong human review
 - translation quality may vary too much for automation to be trusted without controls
 - scope can drift toward a public portal too early
+
+## Immediate implementation clarification
+
+- Do not create a separate `F004.2` or debt sprint for legacy canonical-ref cleanup.
+- Treat cleanup of `LEGACY-{uuid}` sentinel rows as part of `F005 Canonical Record Creation and Linking`.
+- Reason:
+  - fake canonical identifiers affect record identity, provenance confidence, and linking
+  - F005 is the correct place to normalize, backfill, or quarantine them
+  - storage-path neatness does not need to block F005
 
 ## Recommended next validation tasks
 

@@ -118,8 +118,13 @@ export default async function RecordsListPage({
                   <td className="px-4 py-3 text-desk-muted">
                     {r.source_archive}
                   </td>
-                  <td className="px-4 py-3 text-desk-muted font-mono text-xs">
-                    {r.canonical_ref ?? "—"}
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/projects/${id}/records/${r.id}`}
+                      className="font-mono text-xs text-desk-text hover:underline underline-offset-2"
+                    >
+                      {r.canonical_ref ?? "—"}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-desk-muted">
                     {r.language}

@@ -76,7 +76,7 @@
         "Reopen the record and verify provenance information is still visible and unchanged.",
         "Confirm the record can be updated with additional linked text layers without replacing the original source file."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F006",

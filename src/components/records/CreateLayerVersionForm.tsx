@@ -26,7 +26,7 @@ export default function CreateLayerVersionForm({
   defaultLanguage: string | null;
   onClose: () => void;
 }) {
-  const [state, formAction] = useActionState(addTextLayer, { error: null });
+  const [state, formAction, isPending] = useActionState(addTextLayer, { error: null });
   const submitted = useRef(false);
 
   useEffect(() => {
@@ -101,9 +101,10 @@ export default function CreateLayerVersionForm({
 
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-sans bg-vault-bg text-vault-text rounded-[2px] hover:bg-vault-surface transition-colors"
+          disabled={isPending}
+          className="px-4 py-2 text-sm font-sans bg-vault-bg text-vault-text rounded-[2px] hover:bg-vault-surface transition-colors disabled:opacity-50"
         >
-          Save New Version
+          {isPending ? "Saving…" : "Save New Version"}
         </button>
       </form>
     </div>

@@ -38,12 +38,14 @@ Next: F015 — Translation Memory (P0, Day 3)
 ---
 
 ### Session 15 — 2026-03-13
-- F014: Translation Editor and Correction Workflow — implemented via 3-agent parallel team, clean build, PR created
+- F014: Translation Editor and Correction Workflow — implemented via 3-agent parallel team, code reviewed (2 findings fixed), squash merged to main (PR #14)
 - Migration `20260313000006`: `text_layers_insert_translator_correction` INSERT policy — scoped to `layer_type = 'corrected_translation'` and `translator` role via `source_records` + `project_memberships` join (mirrors existing contributor policy shape; no new SQL helpers)
-- New server action `src/lib/actions/save-translation-correction.ts`: session-bound client (RLS enforced); validates `sourceLayerId` is a `machine_translation` layer; derives `record_id`, `project_id`, `language` server-side (language not accepted as client input); allows `project_admin`, `researcher`, `translator` roles; inserts `corrected_translation` with `source_layer_id` (provenance link, not supersession); audit log; `revalidatePath`
+- New server action `src/lib/actions/save-translation-correction.ts`: session-bound client (RLS enforced); validates `sourceLayerId` is a `machine_translation` layer; verifies source layer is active (rejects superseded MT layers via `supersedes_layer_id` reverse lookup); derives `record_id`, `project_id`, `language` server-side (language not accepted as client input); allows `project_admin`, `researcher`, `translator` roles (membership-only, no super_admin bypass); inserts `corrected_translation` with `source_layer_id` (provenance link, not supersession); audit log; `revalidatePath`
 - New component `src/components/records/TranslationEditorForm.tsx`: mirrors `TranscriptionEditorForm`; `sourceLayerId` hidden input only; language displayed read-only (not submitted); `useActionState(saveTranslationCorrection, ...)`; auto-close on success via `useEffect` + submitted ref
 - Modified `src/components/records/TextLayerCard.tsx`: `canCorrectTranslation` required prop; `showTranslationForm` state; "Correct Translation" button on active `machine_translation` layers; form state priority: TranslationEditorForm > TranscriptionEditorForm > CreateLayerVersionForm; action section visible when `canAddLayer || canCorrectTranslation`
-- Modified `src/app/(app)/projects/[id]/records/[recordId]/page.tsx`: `canCorrectTranslation` derived from same membership query (no extra DB call); includes `translator` role alongside `project_admin` and `researcher`; passed to all `TextLayerCard` instances
+- Modified `src/app/(app)/projects/[id]/records/[recordId]/page.tsx`: `canCorrectTranslation` membership-only (no super_admin initialisation — matches action boundary and F012/F013 pattern); includes `translator` role alongside `project_admin` and `researcher`; passed to all `TextLayerCard` instances
+- Review P1 fix: superseded MT layer check added to server action — crafted requests against obsolete MT drafts rejected at the server boundary
+- Review P2 fix: `canCorrectTranslation` initialised to `false` (not `super_admin` shortcut) — non-member super admins do not see correction affordance; read/write boundary consistent
 - Both layers (MT draft + corrected_translation) remain active — no supersession, no cross-type linking; both accessible on record reopen
 - Build passes clean (no warnings). All 5 PRD test steps satisfied. F014 PASSED.
 - plan/2026-03-13-f014-translation-editor-correction-workflow.md written (addendums applied)

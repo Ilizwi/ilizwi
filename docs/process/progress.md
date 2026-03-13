@@ -112,12 +112,15 @@
 - All 5 PRD test steps satisfied. F004 PASSED.
 
 ### Session 15 — 2026-03-13
-- F014: Translation Editor and Correction Workflow — implemented via 3-agent parallel team, clean build, PR created
-- New RLS policy `text_layers_insert_translator_correction`: translator role scoped to `corrected_translation` only; mirrors existing contributor policy shape
-- New `saveTranslationCorrection` server action: session-bound client; derives language/record/project server-side; allows project_admin, researcher, translator; inserts `corrected_translation` with `source_layer_id` provenance link; no supersession
-- New `TranslationEditorForm`: language read-only (not submitted); mirrors TranscriptionEditorForm pattern; auto-close on success
-- `TextLayerCard`: `canCorrectTranslation` prop; "Correct Translation" button on active machine_translation layers; translator-only users see the button
-- Record detail page: `canCorrectTranslation` derived from single membership query; translator role included
+- F014: Translation Editor and Correction Workflow — implemented via 3-agent parallel team, code reviewed (2 findings fixed), squash merged to main (PR #14)
+- New RLS policy `text_layers_insert_translator_correction`: translator role scoped to `corrected_translation` only; mirrors existing contributor policy shape; no new SQL helpers
+- New `saveTranslationCorrection` server action: membership-only (no super_admin bypass); verifies source layer is active (superseded MT layers rejected); derives language/record/project server-side; allows project_admin, researcher, translator; inserts `corrected_translation` with `source_layer_id` provenance link; no supersession
+- New `TranslationEditorForm`: language read-only display (not a form field); mirrors TranscriptionEditorForm pattern; auto-close on success
+- `TextLayerCard`: `canCorrectTranslation` required prop; "Correct Translation" button on active machine_translation layers; action section visible when `canAddLayer || canCorrectTranslation`
+- Record detail page: `canCorrectTranslation` membership-only (no super_admin shortcut — matches F012/F013 boundary); translator role included
+- Review P1 fix: superseded source layer check in server action
+- Review P2 fix: `canCorrectTranslation` initialised to false, not super_admin
+- Both MT draft and corrected_translation remain active and accessible independently
 - All 5 PRD test steps satisfied. Day 3: 3/5. F014 PASSED.
 
 ### Session 14 — 2026-03-13

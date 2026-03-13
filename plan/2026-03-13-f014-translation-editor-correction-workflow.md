@@ -1,6 +1,15 @@
 # F014 — Translation Editor and Correction Workflow
 **Date:** 2026-03-13
 **Branch:** `codex/f014-translation-editor-correction-workflow`
+**Status:** PASSED — squash merged to main (PR #14)
+
+## Post-Implementation Review Fixes
+
+**P1 — Superseded source layer check (save-translation-correction.ts)**
+The initial implementation verified that `sourceLayerId` pointed to a `machine_translation` layer but did not verify the layer was still active. A crafted request against a superseded MT draft would have passed the type check and created a `corrected_translation` from an obsolete source. Fix: added a `count` query for `text_layers` rows with `supersedes_layer_id = sourceLayerId`; if any exists, the layer is superseded and the action returns an error before INSERT.
+
+**P2 — super_admin shortcut removed from canCorrectTranslation (page.tsx)**
+The frontend agent initialised `canCorrectTranslation` from `profile.global_role === "super_admin"`, mirroring how `canAddLayer` is initialised. However `saveTranslationCorrection` is membership-only (no super_admin bypass) and the `text_layers` SELECT policy is also membership-only. This created the same read/write boundary mismatch removed in F012/F013: a non-member super_admin would see the "Correct Translation" button but the server action would reject the submission. Fix: `canCorrectTranslation` initialised to `false` and set exclusively from the membership query.
 
 ---
 

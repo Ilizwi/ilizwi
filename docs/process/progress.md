@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 6 |
-| Remaining | 18 |
+| Completed | 7 |
+| Remaining | 17 |
 | Current Day | 2 |
 
 ## Day 1: Foundation
@@ -28,7 +28,7 @@
 **Status:** In Progress
 
 - [x] F006: Ibali Source Integration — PASSED
-- [ ] F007: NLSA Source Integration
+- [x] F007: NLSA Source Integration — PASSED
 - [ ] F008: Wits Supplementary Source Intake
 - [ ] F009: Source File Viewer
 - [ ] F010: OCR and Source Text Acquisition Layer
@@ -110,6 +110,15 @@
 - Records list shows canonical_ref in monospace column
 - Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
 - All 5 PRD test steps satisfied. F004 PASSED.
+
+### Session 8 — 2026-03-13
+- F007: NLSA ContentDM Source Integration — implemented via parallel agent team (2 agents), code reviewed (P1 fix: date validator tightened to full YYYY-MM-DD only), squash merged to main (PR #7)
+- No new migration — F006 schema covers NLSA
+- Adapter `src/lib/sources/nlsa.ts`: ContentDM singleitem endpoint, flat-field mapping, typed fetch results, timeout error shaping
+- Action `importFromNlsa`: strict two-format parser, alias normalised to lowercase, full-date-only validation, source_ocr layer type, compensating rollback
+- Review P1 fix: partial dates (YYYY, YYYY-MM) rejected — would produce malformed canonical refs violating `CanonicalRefFields.date_issued // YYYY-MM-DD`
+- Import page + form with known-collection hints; project detail link added
+- All 5 PRD steps satisfied. F007 PASSED.
 
 ### Session 7 — 2026-03-13
 - F006: Ibali Source Integration — implemented via parallel agent team (3-wave, 5 agents), code reviewed (P1 fix: removed synthetic date fallback), squash merged to main (PR #6)

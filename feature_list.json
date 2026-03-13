@@ -106,7 +106,7 @@
         "Confirm OCR text exposed by NLSA is captured into the record workflow as a source text layer.",
         "Confirm the imported record is saved as a canonical internal record with source provenance marked as NLSA."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F008",

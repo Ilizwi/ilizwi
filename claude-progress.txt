@@ -4,8 +4,8 @@
 
 ## Current State
 As of: 2026-03-13
-Completed: F001, F002, F003, F004, F005, F006
-Next: F007 — NLSA Source Integration (P0, Day 2)
+Completed: F001, F002, F003, F004, F005, F006, F007
+Next: F008 — Wits Supplementary Source Intake (P1, Day 2)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -14,17 +14,19 @@ Next: F007 — NLSA Source Integration (P0, Day 2)
 - F004: Upload Metadata Enforcement and File Naming — PASSED (2026-03-12)
 - F005: Canonical Record Creation — PASSED (2026-03-13)
 - F006: Ibali Source Integration — PASSED (2026-03-13)
+- F007: NLSA Source Integration — PASSED (2026-03-13)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
 ## Next Actions
-- F007: NLSA Source Integration (P0, Day 2)
-  - Query NLSA ContentDM API for a known Imvo Zabantsundu record
-  - Retrieve item-level metadata and linked source PDF references
-  - Capture OCR text from NLSA as source text layer
-  - Save imported record as canonical internal record with NLSA provenance
+- F008: Wits Supplementary Source Intake (P1, Day 2)
+  - Search/harvest Wits metadata for a Panashe-relevant query
+  - Store Wits record metadata as source-linked record or discovery entry
+  - Link downloadable file or digital object where publicly available
+  - Mark record as Wits-derived supplementary source (not primary structured source)
+  - Confirm Wits records participate in search and filtering
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -33,6 +35,18 @@ Next: F007 — NLSA Source Integration (P0, Day 2)
   This cleanup is now part of F005 rather than a separate debt sprint
 
 ---
+
+### Session 8 — 2026-03-13
+- F007: NLSA Source Integration — implemented via parallel agent team (2 agents), code reviewed (P1 fix: tightened date validation from partial to full YYYY-MM-DD), squash merged to main (PR #7)
+- No DB migration — F006 schema (source_identifier, source_url, nullable storage_path, location CHECK) already covers NLSA
+- New adapter: src/lib/sources/nlsa.ts — ContentDM flat-field mapping (title/date/langua/descri/find/fulltext), fetchNlsaItem, mapNlsaItem, extractNlsaRefs, AbortSignal.timeout(10_000), typed NlsaFetchResult
+- Server action: importFromNlsa — strict nlsa_ref parser (two accepted shapes: {alias}/{id} or full ContentDM URL; everything else rejected with descriptive error), alias normalised to lowercase, full YYYY-MM-DD required (YYYY/YYYY-MM rejected — would produce malformed canonical refs), idempotency pre-check, source_type="nlsa" source_archive="NLSA", asset_type="source_file", layer_type="source_ocr", compensating rollback on partial failure
+- Review P1 fix: date regex tightened from /^\d{4}(-\d{2}(-\d{2})?)?$/ to /^\d{4}-\d{2}-\d{2}$/ — partial dates violate CanonicalRefFields.date_issued // YYYY-MM-DD contract and the date column type
+- Import page: /projects/[id]/import/nlsa with role gate; translator/reviewer see inline access-denied (server-side invariant also enforced in action)
+- NlsaImportForm: useActionState, placeholder p21048coll37/1, hint text listing known aliases (p21048coll37 Imvo Zabantsundu, p21048coll77 Lentsoe la Basotho)
+- Project detail: "Import from NLSA →" link added next to Ibali link (same researcher/admin gate)
+- Provenance distinction: layer_type="source_ocr" kept explicit and separate from Ibali's "source_transcription"
+- All 5 PRD steps satisfied. F007 PASSED.
 
 ### Session 7 — 2026-03-13
 - F006: Ibali Source Integration — implemented via parallel agent team (3-wave, 5 agents), code reviewed (1 P1 fix), squash merged to main (PR #6)

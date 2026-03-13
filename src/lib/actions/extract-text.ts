@@ -7,19 +7,16 @@ import { requireAuth } from "@/lib/auth/role-guard";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { extractTextFromBuffer } from "@/lib/sources/text-extractor";
 
+// Note: super_admin bypass is intentionally absent here.
+// SELECT policies on source_records, file_assets, text_layers, and storage.objects
+// are all membership-only — a super_admin who is not a project member cannot read the
+// record or its assets, so allowing them through the app-layer check would cause
+// "Record not found" immediately after. The action boundary must match the DB boundary.
 async function assertLayerPermission(
   supabase: SupabaseClient,
   projectId: string,
   callerId: string
 ): Promise<string | null> {
-  const { data: callerProfile } = await supabase
-    .from("profiles")
-    .select("global_role")
-    .eq("id", callerId)
-    .single();
-
-  if (callerProfile?.global_role === "super_admin") return null;
-
   const { data: membership } = await supabase
     .from("project_memberships")
     .select("role")

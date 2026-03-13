@@ -6,6 +6,7 @@ import AddTextLayerForm from "@/components/records/AddTextLayerForm";
 import type { SourceRecord, FileAsset, TextLayer, EnrichedFileAsset } from "@/types";
 import FileViewerSection from "@/components/records/FileViewerSection";
 import ExtractTextSection from "@/components/records/ExtractTextSection";
+import TextLayerCard from "@/components/records/TextLayerCard";
 
 export default async function RecordDetailPage({
   params,
@@ -74,6 +75,19 @@ export default async function RecordDetailPage({
     .order("created_at", { ascending: true });
 
   const typedLayers = (textLayers ?? []) as TextLayer[];
+
+  const supersededIds = new Set(
+    typedLayers
+      .map((l) => l.supersedes_layer_id)
+      .filter(Boolean) as string[]
+  );
+
+  const sortedLayers = [...typedLayers].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+
+  const activeLayers = sortedLayers.filter((l) => !supersededIds.has(l.id));
+  const supersededLayers = sortedLayers.filter((l) => supersededIds.has(l.id));
 
   // Idempotency hint — does a file_extract source_ocr layer already exist?
   const hasExistingSourceOcr = typedLayers.some(
@@ -176,67 +190,42 @@ export default async function RecordDetailPage({
       {/* Text Layers */}
       <section className="mb-8">
         <h2 className="font-serif text-xl text-desk-text mb-4">Text Layers</h2>
+
         {typedLayers.length === 0 ? (
           <p className="text-desk-muted text-sm font-sans">No text layers yet.</p>
         ) : (
-          <div className="border border-desk-border rounded-[2px] overflow-hidden">
-            <table className="w-full text-sm font-sans">
-              <thead>
-                <tr className="bg-vault-bg/5 border-b border-desk-border">
-                  <th className="text-left px-4 py-2 text-desk-muted font-normal text-xs uppercase tracking-widest">
-                    Layer Type
-                  </th>
-                  <th className="text-left px-4 py-2 text-desk-muted font-normal text-xs uppercase tracking-widest">
-                    Status
-                  </th>
-                  <th className="text-left px-4 py-2 text-desk-muted font-normal text-xs uppercase tracking-widest">
-                    Language
-                  </th>
-                  <th className="text-left px-4 py-2 text-desk-muted font-normal text-xs uppercase tracking-widest">
-                    Source
-                  </th>
-                  <th className="text-left px-4 py-2 text-desk-muted font-normal text-xs uppercase tracking-widest">
-                    Preview
-                  </th>
-                  <th className="text-left px-4 py-2 text-desk-muted font-normal text-xs uppercase tracking-widest">
-                    Created
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {typedLayers.map((l) => (
-                  <tr key={l.id} className="border-b border-desk-border last:border-b-0">
-                    <td className="px-4 py-3">
-                      <span className="inline-block px-2 py-0.5 text-[10px] font-sans uppercase tracking-widest rounded-[2px] bg-vault-bg/10 text-desk-text">
-                        {l.layer_type.replace(/_/g, " ")}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-block px-2 py-0.5 text-[10px] font-sans uppercase tracking-widest rounded-[2px] ${statusBadge(l.status)}`}
-                      >
-                        {l.status.replace(/_/g, " ")}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-desk-muted">
-                      {l.language ?? "— inherited from record"}
-                    </td>
-                    <td className="px-4 py-3 text-desk-muted">
-                      {l.source_method.replace(/_/g, " ")}
-                    </td>
-                    <td className="px-4 py-3 text-desk-text max-w-xs truncate">
-                      {l.content.length > 200
-                        ? l.content.slice(0, 200) + "..."
-                        : l.content}
-                    </td>
-                    <td className="px-4 py-3 text-desk-muted">
-                      {new Date(l.created_at).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className="space-y-3">
+              {activeLayers.map((l) => (
+                <TextLayerCard
+                  key={l.id}
+                  layer={l}
+                  isSuperseded={false}
+                  canAddLayer={canAddLayer}
+                  recordId={recordId}
+                />
+              ))}
+            </div>
+
+            {supersededLayers.length > 0 && (
+              <div className="mt-6">
+                <h3 className="font-sans text-xs uppercase tracking-widest text-desk-muted mb-3">
+                  Superseded Versions
+                </h3>
+                <div className="space-y-3">
+                  {supersededLayers.map((l) => (
+                    <TextLayerCard
+                      key={l.id}
+                      layer={l}
+                      isSuperseded={true}
+                      canAddLayer={canAddLayer}
+                      recordId={recordId}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {canAddLayer && (

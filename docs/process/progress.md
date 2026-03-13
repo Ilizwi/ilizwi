@@ -112,10 +112,11 @@
 - All 5 PRD test steps satisfied. F004 PASSED.
 
 ### Session 10 — 2026-03-13
-- F010: OCR and Source Text Acquisition Layer — implemented on branch codex/f010-ocr-source-text-acquisition
+- F010: OCR and Source Text Acquisition Layer — implemented, code reviewed (1 P1 fix), squash merged to main (PR #9)
 - No DB migration required — existing text_layers schema supports this
 - pdf-parse v2 (PDFParse class-based API) installed; extractTextFromBuffer utility in src/lib/sources/text-extractor.ts
 - extractTextFromRecord server action: derives projectId server-side, V1 first-PDF rule, content-hash no-op, supersedes_layer_id versioning, sanitized error messages
+- Review P1 fix: super_admin bypass removed from assertLayerPermission — all SELECT/storage read policies are membership-only, app-layer boundary now matches DB boundary
 - ExtractTextSection client component: useActionState, PDF/image branch, re-extract hint
 - Record detail page wired with hasPdfAsset and hasExistingSourceOcr computations
 - All 5 PRD steps satisfied. F010 PASSED.

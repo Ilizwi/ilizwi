@@ -40,7 +40,7 @@ Skipped (sequencing): F008 — Wits Supplementary Source Intake (P1, Day 2) — 
 ---
 
 ### Session 10 — 2026-03-13
-- F010: OCR and Source Text Acquisition Layer — implemented on branch codex/f010-ocr-source-text-acquisition
+- F010: OCR and Source Text Acquisition Layer — implemented, code reviewed (1 P1 fix), squash merged to main (PR #9)
 - No DB migration required — existing text_layers table + types (source_ocr, file_extract) already support this
 - New utility: src/lib/sources/text-extractor.ts — uses pdf-parse v2 PDFParse class; discriminated ExtractResult type (ok/unsupported_mime_type/empty_content/parse_error); internal errors only logged, never surfaced to caller
 - New server action: src/lib/actions/extract-text.ts — derives projectId from record (no client trust); V1 rule: first uploaded PDF only (logs if multiple); content-hash no-op (sha256 compare avoids duplicate rows for unchanged PDFs); supersedes_layer_id for versioning; all internal errors sanitized to fixed safe strings; revalidatePath after insert
@@ -48,6 +48,8 @@ Skipped (sequencing): F008 — Wits Supplementary Source Intake (P1, Day 2) — 
 - Record detail page wired: hasPdfAsset computed from typedAssets; hasExistingSourceOcr computed from typedLayers; ExtractTextSection rendered before AddTextLayerForm under canAddLayer gate
 - No Jest setup added (addendum: too much tooling surface for V1); feature verified via typecheck + build + manual test
 - blobToBuffer not exported (addendum: inlined as Buffer.from(await blob.arrayBuffer()))
+- Review P1 fix: removed super_admin bypass from assertLayerPermission — SELECT policies on source_records, file_assets, text_layers, and storage.objects are all membership-only; app-layer boundary now matches DB boundary
+- Note: same super_admin bypass bug exists in text-layers.ts#addTextLayer (F005 code) — deferred, out of scope for this PR
 - Build, typecheck, lint all pass.
 - plan/2026-03-13-f010-ocr-source-text-acquisition.md written
 - F010 PASSED.

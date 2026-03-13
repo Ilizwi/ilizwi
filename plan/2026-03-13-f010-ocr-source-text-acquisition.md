@@ -457,3 +457,9 @@ docs(f010): mark F010 as passing, update progress
 - **Sanitized errors** — addendum: internal errors (download, parse, insert) are console.error'd only; users see fixed safe strings.
 - **V1 first-PDF rule** — addendum: explicit. Multiple PDF assets → first uploaded only; logs if >1 found.
 - **`supersedes_layer_id` instead of update** — CLAUDE.md product rule: "do not overwrite text layers silently". Full history preserved.
+- **No super_admin bypass in `assertLayerPermission`** — P1 review fix: SELECT policies on `source_records`, `file_assets`, `text_layers`, and `storage.objects` are all membership-only. A non-member super_admin would pass the app-layer check and immediately fail at the first DB read. App-layer boundary must match DB boundary.
+- **Known debt** — the same super_admin bypass bug exists in `text-layers.ts#addTextLayer` (F005). Deferred.
+
+## Status
+
+**PASSED** — squash merged to main as PR #9 (2026-03-13)

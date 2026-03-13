@@ -4,9 +4,8 @@
 
 ## Current State
 As of: 2026-03-13
-Completed: F001, F002, F003, F004, F005, F006, F007, F009, F010, F011
-Next: F008 — Wits Supplementary Source Intake (P1, Day 2) — previously deferred; or F012 — Transcription Editor and Review Status (P0, Day 3)
-Skipped (sequencing): F008 — Wits Supplementary Source Intake (P1, Day 2) — deferred but still pending
+Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011
+Next: F012 — Transcription Editor and Review Status (P0, Day 3)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -26,12 +25,6 @@ Skipped (sequencing): F008 — Wits Supplementary Source Intake (P1, Day 2) — 
 
 ## Next Actions
 - F012: Transcription Editor and Review Status (P0, Day 3) — next unblocked P0
-- F008: Wits Supplementary Source Intake (P1, Day 2) — still deferred
-  - Search/harvest Wits metadata for a Panashe-relevant query
-  - Store Wits record metadata as source-linked record or discovery entry
-  - Link downloadable file or digital object where publicly available
-  - Mark record as Wits-derived supplementary source (not primary structured source)
-  - Confirm Wits records participate in search and filtering
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -40,6 +33,20 @@ Skipped (sequencing): F008 — Wits Supplementary Source Intake (P1, Day 2) — 
   This cleanup is now part of F005 rather than a separate debt sprint
 
 ---
+
+### Session 12 — 2026-03-13
+- F008: Wits Supplementary Source Intake — implemented via parallel agent team (2 agents), squash merged to main
+- No DB migration required — source_type='wits' already in ENUM; source_identifier, source_url, file_assets XOR constraint all in place from F006
+- New adapter: src/lib/sources/wits.ts — XMLParser (fast-xml-parser), validateWitsRef (OAI id format guard), toStringArray/toStringOrNull normalisers (Addendum 3: explicit single-vs-array handling for dc: fields), extractDate (strict ISO first, year fallback → YYYY-01-01, date_raw always verbatim from source), extractFileUrl (file-extension scan on dc:identifier[]), fetchWitsItem (AbortSignal.timeout 10s, typed errors, no throw)
+- New server action: src/lib/actions/import-wits.ts — assertImportPermission (super_admin bypass + role check), witsRef format validation, idempotency pre-check, date rejection if date_extracted null, source_records insert with source_type='wits' source_archive='Wits' date_issued=date_extracted date_issued_raw=verbatim dc:date (Addendum 2), canonical ref collision retry r2-r9 (Addendum 4: collision is expected for year-range dates), file_assets insert only if file_url non-null (Addendum 1: metadata-only path skips asset insert), no text_layers, compensating rollback on asset failure
+- New import page: /projects/[id]/import/wits — server component, role gate, inline access-denied for translators/reviewers
+- New form: WitsImportForm.tsx — useActionState, OAI identifier input, placeholder/hint text per spec, success/error/pending states
+- Modified: /projects/[id]/page.tsx — "Import from Wits →" link added with same researcher/admin gate
+- Live OAI-PMH contract verified: historic_99960 has dc:date "1955 - 1959" (range); dc:identifier = landing pages only (no file URLs); metadata-only path is standard
+- fast-xml-parser added to dependencies
+- Build, typecheck, lint all pass
+- plan/2026-03-13-f008-wits-supplementary-source.md written (includes addendums)
+- F008 PASSED.
 
 ### Session 11 — 2026-03-13
 - F011: Text Layer Management — implemented via parallel agent team (3 agents, Tasks 1+2 parallel, Task 3 sequential), code reviewed (3 findings), 2 commits, squash merged to main (PR #10)

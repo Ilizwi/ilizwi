@@ -121,7 +121,7 @@
         "Confirm the record is marked as a Wits-derived supplementary source rather than a primary structured newspaper source.",
         "Confirm Wits records can still participate in search and filtering inside the platform."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F009",

@@ -106,11 +106,18 @@ export async function importFromIbali(
   const mapped = mapIbaliItem(itemResult.data);
   const refs = extractMediaRefs(mediaResult.data);
 
+  // Require a real date from the source — do not synthesize one
+  if (!mapped.date_issued) {
+    return {
+      error: `Ibali item ${itemId} does not include a date (dcterms:date). Cannot create a canonical record without an issue date.`,
+    };
+  }
+
   // Generate canonical ref
   const baseRef = generateCanonicalRef({
     source_type: "ibali",
     publication_title: mapped.publication_title,
-    date_issued: mapped.date_issued ?? new Date().toISOString().slice(0, 10),
+    date_issued: mapped.date_issued,
     volume: mapped.volume,
     issue_number: mapped.issue_number,
   });

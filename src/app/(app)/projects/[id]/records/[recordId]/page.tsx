@@ -3,14 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import AddTextLayerForm from "@/components/records/AddTextLayerForm";
-import type { SourceRecord, FileAsset, TextLayer } from "@/types";
-
-function formatBytes(bytes: number | null): string {
-  if (bytes == null) return "—";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
+import type { SourceRecord, FileAsset, TextLayer, EnrichedFileAsset } from "@/types";
+import FileViewerSection from "@/components/records/FileViewerSection";
 
 export default async function RecordDetailPage({
   params,
@@ -41,6 +35,30 @@ export default async function RecordDetailPage({
     .order("uploaded_at", { ascending: true });
 
   const typedAssets = (fileAssets ?? []) as FileAsset[];
+
+  // Enrich assets with view URLs
+  // - storage_path assets: generate 1-hour signed URL from Supabase storage
+  // - source_url assets: use the URL directly (validated as http/https by the viewer component)
+  // Note: signed URLs expire after 1 hour. If the page stays open past expiry,
+  // the iframe will show a broken/auth-error state — acceptable tradeoff for simplicity.
+  const enrichedAssets: EnrichedFileAsset[] = await Promise.all(
+    typedAssets.map(async (asset) => {
+      if (asset.storage_path) {
+        const { data, error } = await supabase.storage
+          .from("archive-files")
+          .createSignedUrl(asset.storage_path, 3600);
+        return {
+          ...asset,
+          view_url: data?.signedUrl ?? null,
+          view_url_error: error?.message ?? null,
+        };
+      }
+      if (asset.source_url) {
+        return { ...asset, view_url: asset.source_url, view_url_error: null };
+      }
+      return { ...asset, view_url: null, view_url_error: null };
+    })
+  );
 
   // Text layers
   const { data: textLayers } = await supabase
@@ -141,50 +159,7 @@ export default async function RecordDetailPage({
       {/* File Assets */}
       <section className="mb-8">
         <h2 className="font-serif text-xl text-desk-text mb-4">File Assets</h2>
-        {typedAssets.length === 0 ? (
-          <p className="text-desk-muted text-sm font-sans">No file assets.</p>
-        ) : (
-          <div className="border border-desk-border rounded-[2px] overflow-hidden">
-            <table className="w-full text-sm font-sans">
-              <thead>
-                <tr className="bg-vault-bg/5 border-b border-desk-border">
-                  <th className="text-left px-4 py-2 text-desk-muted font-normal text-xs uppercase tracking-widest">
-                    Filename
-                  </th>
-                  <th className="text-left px-4 py-2 text-desk-muted font-normal text-xs uppercase tracking-widest">
-                    Type
-                  </th>
-                  <th className="text-left px-4 py-2 text-desk-muted font-normal text-xs uppercase tracking-widest">
-                    Size
-                  </th>
-                  <th className="text-left px-4 py-2 text-desk-muted font-normal text-xs uppercase tracking-widest">
-                    Asset Type
-                  </th>
-                  <th className="text-left px-4 py-2 text-desk-muted font-normal text-xs uppercase tracking-widest">
-                    Uploaded
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {typedAssets.map((a) => (
-                  <tr key={a.id} className="border-b border-desk-border last:border-b-0">
-                    <td className="px-4 py-3 text-desk-text">{a.original_filename}</td>
-                    <td className="px-4 py-3 text-desk-muted">{a.mime_type ?? "—"}</td>
-                    <td className="px-4 py-3 text-desk-muted">{formatBytes(a.size_bytes)}</td>
-                    <td className="px-4 py-3">
-                      <span className="inline-block px-2 py-0.5 text-[10px] font-sans uppercase tracking-widest rounded-[2px] bg-vault-bg/10 text-desk-text">
-                        {a.asset_type.replace("_", " ")}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-desk-muted">
-                      {new Date(a.uploaded_at).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <FileViewerSection assets={enrichedAssets} />
       </section>
 
       {/* Text Layers */}

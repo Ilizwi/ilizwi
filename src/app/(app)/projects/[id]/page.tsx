@@ -92,6 +92,14 @@ export default async function ProjectDetailPage({
               Import from NLSA &rarr;
             </Link>
           )}
+          {(isAdmin || callerMembership?.role === "researcher") && (
+            <Link
+              href={`/projects/${id}/import/wits`}
+              className="text-sm font-sans text-desk-text underline underline-offset-2"
+            >
+              Import from Wits &rarr;
+            </Link>
+          )}
         </div>
       </div>
 

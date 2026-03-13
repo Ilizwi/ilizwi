@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 8 |
-| Remaining | 16 |
+| Completed | 9 |
+| Remaining | 15 |
 | Current Day | 2 |
 
 ## Day 1: Foundation
@@ -31,7 +31,7 @@
 - [x] F007: NLSA Source Integration — PASSED
 - [ ] F008: Wits Supplementary Source Intake
 - [x] F009: Source File Viewer — PASSED
-- [ ] F010: OCR and Source Text Acquisition Layer
+- [x] F010: OCR and Source Text Acquisition Layer — PASSED
 - [ ] F011: Text Layer Management
 
 **Deliverable:** Source ingestion flows working with preserved file/text layers
@@ -110,6 +110,15 @@
 - Records list shows canonical_ref in monospace column
 - Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
 - All 5 PRD test steps satisfied. F004 PASSED.
+
+### Session 10 — 2026-03-13
+- F010: OCR and Source Text Acquisition Layer — implemented on branch codex/f010-ocr-source-text-acquisition
+- No DB migration required — existing text_layers schema supports this
+- pdf-parse v2 (PDFParse class-based API) installed; extractTextFromBuffer utility in src/lib/sources/text-extractor.ts
+- extractTextFromRecord server action: derives projectId server-side, V1 first-PDF rule, content-hash no-op, supersedes_layer_id versioning, sanitized error messages
+- ExtractTextSection client component: useActionState, PDF/image branch, re-extract hint
+- Record detail page wired with hasPdfAsset and hasExistingSourceOcr computations
+- All 5 PRD steps satisfied. F010 PASSED.
 
 ### Session 9 — 2026-03-13
 - F009: Source File Viewer — implemented via 2-agent parallel team, squash merged to main (PR #8)

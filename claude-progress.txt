@@ -4,9 +4,9 @@
 
 ## Current State
 As of: 2026-03-13
-Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012
-Day 1 complete. Day 2 complete. Day 3 in progress (1/5 features done).
-Next: F013 — Machine Translation Draft Generation (P0, Day 3)
+Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013
+Day 1 complete. Day 2 complete. Day 3 in progress (2/5 features done).
+Next: F014 — Translation Editor and Correction Workflow (P0, Day 3)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -27,7 +27,7 @@ Next: F013 — Machine Translation Draft Generation (P0, Day 3)
 - Readex permissions response pending
 
 ## Next Actions
-- F013: Machine Translation Draft Generation (P0, Day 3) — next unblocked P0
+- F014: Translation Editor and Correction Workflow (P0, Day 3) — next unblocked P0
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -36,6 +36,23 @@ Next: F013 — Machine Translation Draft Generation (P0, Day 3)
   This cleanup is now part of F005 rather than a separate debt sprint
 
 ---
+
+### Session 14 — 2026-03-13
+- F013: Machine Translation Draft Generation — implemented via 3-agent parallel team, code reviewed (3 findings fixed), squash merged to main (PR #13)
+- Migration `20260313000005`: `source_layer_id UUID` (self-referencing FK, NO ACTION — provenance is permanent) + `translation_provider TEXT` added to `text_layers`; `enforce_text_layers_immutability()` trigger extended to guard both new fields with `IS DISTINCT FROM`
+- New module `src/lib/translation/translation-constants.ts`: `TARGET_LANGUAGE_ALLOWLIST`, `TargetLanguage`, `PROVIDER_DISPLAY_LABELS` — safe for client import; canonical display label source
+- New module `src/lib/translation/google-translate.ts`: `translateWithGoogle()` with `SUPPORTED_SOURCE_LANGS` allowlist (African + European/colonial corpus languages); omits `source` param when language null or unrecognized (auto-detect path, not an error); `PROVIDER_NAME`; re-exports constants from `translation-constants.ts`; server-only
+- New server action `src/lib/actions/generate-translation.ts`: membership-only auth (no super_admin bypass); source layer priority selection (`corrected_transcription > source_transcription > source_ocr`), tie-break by `created_at DESC`; blocks if any active MT layer exists including manually created null-provenance rows; validates API key before call; inserts with `source_layer_id` + `translation_provider`; audit log; `revalidatePath`
+- New component `src/components/records/GenerateTranslationSection.tsx`: client component, `useActionState`, silent role gate (`canGenerate=false` → null), info notices for blocked states (no eligible layer / MT already exists), target language `<select>`, success shows layer ID
+- Modified `src/app/(app)/projects/[id]/records/[recordId]/page.tsx`: `hasEligibleLayer` + `hasActiveMtLayer` flags computed server-side; `GenerateTranslationSection` rendered between `ExtractTextSection` and `AddTextLayerForm` inside `canAddLayer` gate
+- Modified `src/components/records/TextLayerCard.tsx`: imports `PROVIDER_DISPLAY_LABELS` from `translation-constants.ts`; shows provider label in metadata row when present
+- `.env.example`: `GOOGLE_TRANSLATE_API_KEY=` documented
+- Review P1 fix: blocked-regeneration message no longer suggests unsupported workflow — now reads "An active machine translation draft already exists for this record. Regeneration is not available in this version."
+- Review P2 fix: `PROVIDER_DISPLAY_LABELS` and `TARGET_LANGUAGE_ALLOWLIST` extracted to `translation-constants.ts`; client components import from there; `google-translate.ts` server-only boundary enforced by comment
+- Review P3 fix: invalid `targetLanguage` now returns an explicit error (lists supported codes) instead of silently coercing to `"en"`
+- TypeScript type extended: `TextLayer.source_layer_id: string | null`, `TextLayer.translation_provider: string | null`
+- Build, typecheck, lint all pass. All 5 PRD test steps satisfied. F013 PASSED.
+- plan/2026-03-13-f013-machine-translation-draft.md written (addendums applied)
 
 ### Session 13 — 2026-03-13
 - F012: Transcription Editor and Review Status — implemented via parallel subagent team (5 tasks, Tasks 1+2 parallel, 3+4 parallel, 5 sequential), code reviewed (2 findings, 1 fix commit), squash merged to main (PR #12)

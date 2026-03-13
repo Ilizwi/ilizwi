@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 12 |
-| Remaining | 12 |
+| Completed | 13 |
+| Remaining | 11 |
 | Current Day | 3 |
 
 ## Day 1: Foundation
@@ -42,7 +42,7 @@
 **Status:** In Progress
 
 - [x] F012: Transcription Editor and Review Status — PASSED
-- [ ] F013: Machine Translation Draft Generation
+- [x] F013: Machine Translation Draft Generation — PASSED
 - [ ] F014: Translation Editor and Correction Workflow
 - [ ] F015: Translation Memory
 - [ ] F016: Protected-Term and Glossary Rules
@@ -110,6 +110,16 @@
 - Records list shows canonical_ref in monospace column
 - Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
 - All 5 PRD test steps satisfied. F004 PASSED.
+
+### Session 14 — 2026-03-13
+- F013: Machine Translation Draft Generation — implemented via 3-agent parallel team, code reviewed (3 findings fixed), squash merged to main (PR #13)
+- Migration adds `source_layer_id` (NO ACTION FK, immutable) + `translation_provider` to `text_layers`
+- New modules: `translation-constants.ts` (client-safe UI constants), `google-translate.ts` (server-only API wrapper with auto-detect path for unrecognized source languages)
+- Server action enforces membership-only auth, source layer priority selection, blocks any active MT (incl. manual), rejects invalid `targetLanguage`
+- `GenerateTranslationSection` UI: silent role gate, info notices for blocked states, language selector, success/error via `useActionState`
+- `TextLayerCard`: provider display label from canonical map
+- `TextLayer` type extended with `source_layer_id` + `translation_provider`
+- All 5 PRD test steps satisfied. F013 PASSED. Day 3: 2/5 done.
 
 ### Session 13 — 2026-03-13
 - F012: Transcription Editor and Review Status — implemented via parallel subagent team (5 tasks), code reviewed (2 findings fixed), squash merged to main (PR #12)

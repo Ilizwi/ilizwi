@@ -196,7 +196,7 @@
         "Confirm the machine translation is clearly labeled as a draft.",
         "Confirm the record keeps the translation layer separate from both transcription and annotation layers."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F014",

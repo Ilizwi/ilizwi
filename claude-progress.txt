@@ -4,8 +4,8 @@
 
 ## Current State
 As of: 2026-03-13
-Completed: F001, F002, F003, F004, F005
-Next: F006 — Ibali Source Integration (P0, Day 2)
+Completed: F001, F002, F003, F004, F005, F006
+Next: F007 — NLSA Source Integration (P0, Day 2)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -13,17 +13,18 @@ Next: F006 — Ibali Source Integration (P0, Day 2)
 - F003: Manual Archive Upload Intake — PASSED (2026-03-12)
 - F004: Upload Metadata Enforcement and File Naming — PASSED (2026-03-12)
 - F005: Canonical Record Creation — PASSED (2026-03-13)
+- F006: Ibali Source Integration — PASSED (2026-03-13)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
 ## Next Actions
-- F006: Ibali Source Integration (P0, Day 2)
-  - Query Ibali API for a known Isigidimi issue
-  - Retrieve issue-level metadata and linked transcription file references
-  - Capture extracted transcription text into the record workflow
-  - Save imported record as canonical internal record with Ibali provenance
+- F007: NLSA Source Integration (P0, Day 2)
+  - Query NLSA ContentDM API for a known Imvo Zabantsundu record
+  - Retrieve item-level metadata and linked source PDF references
+  - Capture OCR text from NLSA as source text layer
+  - Save imported record as canonical internal record with NLSA provenance
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -32,6 +33,17 @@ Next: F006 — Ibali Source Integration (P0, Day 2)
   This cleanup is now part of F005 rather than a separate debt sprint
 
 ---
+
+### Session 7 — 2026-03-13
+- F006: Ibali Source Integration — implemented via parallel agent team (3-wave, 5 agents), code reviewed, squash merged to main (PR #6)
+- Migration `20260313000003`: source_identifier + source_url on source_records; partial unique index (dedupe invariant); source_url on file_assets; storage_path made nullable; location CHECK constraint (exactly one of storage_path/source_url)
+- New adapter: src/lib/sources/ibali.ts — Omeka S property helper, typed fetch results, 10s AbortSignal timeout, 3 error shapes
+- Server action: importFromIbali — idempotency check, assertImportPermission (mirrors existing pattern), canonical ref collision retry, compensating rollback on partial failure, accepts ID or full URL
+- Import page: /projects/[id]/import/ibali with role-gated access; IbaliImportForm with useActionState
+- Project detail: Import from Ibali link (same gate as Upload)
+- Types: SourceRecord + FileAsset extended; storage_path nullable
+- supabase db push applied; build passes
+- All 5 PRD steps satisfied + 4 addendum criteria (idempotency, location invariant, compensating rollback, timeout handling). F006 PASSED.
 
 ### Session 6 — 2026-03-13
 - F005: Canonical Record Creation — implemented via parallel agent team (3 agents), code reviewed, 2 fixes applied, squash merged to main (PR #5)

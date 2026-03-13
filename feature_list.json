@@ -91,7 +91,7 @@
         "Confirm extracted transcription text from the Ibali media payload is captured into the record workflow.",
         "Confirm the imported record is saved as a canonical internal record with source provenance marked as Ibali."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F007",

@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 5 |
-| Remaining | 19 |
+| Completed | 6 |
+| Remaining | 18 |
 | Current Day | 2 |
 
 ## Day 1: Foundation
@@ -25,9 +25,9 @@
 ---
 
 ## Day 2: Source and Text Foundations
-**Status:** Not Started
+**Status:** In Progress
 
-- [ ] F006: Ibali Source Integration
+- [x] F006: Ibali Source Integration — PASSED
 - [ ] F007: NLSA Source Integration
 - [ ] F008: Wits Supplementary Source Intake
 - [ ] F009: Source File Viewer
@@ -110,6 +110,18 @@
 - Records list shows canonical_ref in monospace column
 - Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
 - All 5 PRD test steps satisfied. F004 PASSED.
+
+### Session 7 — 2026-03-13
+- F006: Ibali Source Integration — implemented via parallel agent team (3-wave, 5 agents), squash merged to main (PR #6)
+- Migration `20260313000003`: `source_identifier` + `source_url` added to `source_records`; partial unique index for dedupe invariant `(project_id, source_type, source_identifier) WHERE source_identifier IS NOT NULL`; `source_url` added to `file_assets`; `storage_path` made nullable; location CHECK constraint ensures each asset has exactly one of `storage_path` or `source_url`
+- New module: `src/lib/sources/ibali.ts` — pure TS adapter, Omeka S property helper, `fetchIbaliItem`, `fetchIbaliMedia`, `mapIbaliItem`, `extractMediaRefs`; all fetches use `AbortSignal.timeout(10_000)` with three typed error shapes (not_found / timeout / network)
+- Server action `importFromIbali`: idempotency check before insert; assertImportPermission mirrors existing permission guard pattern exactly; canonical ref collision retry; compensating rollback (file_assets → source_records) if any child write fails; accepts raw item ID or full Ibali URL
+- Import page: `/projects/[id]/import/ibali` — role-gated server component; translator/reviewer see access-denied inline
+- `IbaliImportForm`: useActionState, success shows record link, error shown inline
+- Project detail: "Import from Ibali →" link added to Records section (same role gate as Upload)
+- Types updated: `source_identifier`, `source_url` on `SourceRecord`; `storage_path` nullable, `source_url` added on `FileAsset`
+- `supabase db push` applied; build passes clean
+- All 5 PRD steps + 4 addendum criteria satisfied. F006 PASSED.
 
 ### Session 6 — 2026-03-13
 - F005 Canonical Record Creation — implemented via parallel agent team (3 agents), code reviewed (1 P1 finding), 2 fixes applied, squash merged to main (PR #5)

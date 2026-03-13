@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 7 |
-| Remaining | 17 |
+| Completed | 8 |
+| Remaining | 16 |
 | Current Day | 2 |
 
 ## Day 1: Foundation
@@ -30,7 +30,7 @@
 - [x] F006: Ibali Source Integration — PASSED
 - [x] F007: NLSA Source Integration — PASSED
 - [ ] F008: Wits Supplementary Source Intake
-- [ ] F009: Source File Viewer
+- [x] F009: Source File Viewer — PASSED
 - [ ] F010: OCR and Source Text Acquisition Layer
 - [ ] F011: Text Layer Management
 
@@ -110,6 +110,14 @@
 - Records list shows canonical_ref in monospace column
 - Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
 - All 5 PRD test steps satisfied. F004 PASSED.
+
+### Session 9 — 2026-03-13
+- F009: Source File Viewer — implemented via 2-agent parallel team, squash merged to main (PR #8)
+- New: `FileViewerSection` client component — inline PDF iframe viewer, non-PDF fallback, disabled View state on null/error view_url
+- New: `EnrichedFileAsset = FileAsset & { view_url: string | null; view_url_error?: string | null }` in `src/types/index.ts`
+- Signed URLs generated server-side for `storage_path` assets; `source_url` assets passed through directly
+- Hardening: raw error messages sanitized to `"Preview unavailable"`; `isTrustedOrigin()` allowlist (Supabase, NLSA, Ibali) gates iframe; untrusted-origin PDFs fall back to open-link
+- All 5 PRD steps satisfied. F009 PASSED.
 
 ### Session 8 — 2026-03-13
 - F007: NLSA ContentDM Source Integration — implemented via parallel agent team (2 agents), code reviewed (P1 fix: date validator tightened to full YYYY-MM-DD only), squash merged to main (PR #7)

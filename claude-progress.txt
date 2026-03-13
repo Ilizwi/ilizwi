@@ -4,8 +4,9 @@
 
 ## Current State
 As of: 2026-03-13
-Completed: F001, F002, F003, F004, F005, F006, F007
-Next: F008 — Wits Supplementary Source Intake (P1, Day 2)
+Completed: F001, F002, F003, F004, F005, F006, F007, F009
+Next: F010 — OCR and Source Text Acquisition Layer (P0, Day 2)
+Skipped (sequencing): F008 — Wits Supplementary Source Intake (P1, Day 2) — deferred
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -15,6 +16,7 @@ Next: F008 — Wits Supplementary Source Intake (P1, Day 2)
 - F005: Canonical Record Creation — PASSED (2026-03-13)
 - F006: Ibali Source Integration — PASSED (2026-03-13)
 - F007: NLSA Source Integration — PASSED (2026-03-13)
+- F009: Source File Viewer — PASSED (2026-03-13)
 
 ## Blockers
 - Final product name pending
@@ -35,6 +37,21 @@ Next: F008 — Wits Supplementary Source Intake (P1, Day 2)
   This cleanup is now part of F005 rather than a separate debt sprint
 
 ---
+
+### Session 9 — 2026-03-13
+- F009: Source File Viewer — implemented via parallel agent team (2 agents), squash merged to main (PR #8)
+- No DB migration required — extends existing record detail page
+- New component: `src/components/records/FileViewerSection.tsx` — "use client"; table + inline viewer panel; PDF iframe, non-PDF fallback link, disabled View when no preview available
+- New type: `EnrichedFileAsset = FileAsset & { view_url: string | null; view_url_error?: string | null }`
+- Signed URLs generated server-side (1h expiry) for storage_path assets; source_url assets passed directly; isSafeUrl() enforces http/https-only constraint
+- Viewer panel: attaches below table visually (border-t-0), header with filename + asset_type badge + Close button, iframe for application/pdf, fallback for all other types
+- Failure handling: createSignedUrl errors → view_url_error → disabled button; null view_url → disabled button
+- Signed URL expiry acknowledged: broken iframe state after 1h is acceptable (no auto-refresh)
+- Tenancy invariant preserved: existing requireProjectMember guard covers viewer (no weakening)
+- All 5 PRD steps satisfied. Build, typecheck, lint pass.
+- Review hardening: error?.message → "Preview unavailable" (no internal strings to client); isTrustedOrigin() allowlist gates iframe to Supabase/NLSA/Ibali; untrusted-origin PDFs fall back to open-link
+- plan/2026-03-13-f009-source-file-viewer.md written
+- F009 PASSED.
 
 ### Session 8 — 2026-03-13
 - F007: NLSA Source Integration — implemented via parallel agent team (2 agents), code reviewed (P1 fix: tightened date validation from partial to full YYYY-MM-DD), squash merged to main (PR #7)

@@ -136,7 +136,7 @@
         "Confirm that source provenance remains visible while viewing the source.",
         "Confirm the viewer works for at least one uploaded file and one imported source-linked file."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F010",

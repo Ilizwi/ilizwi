@@ -181,7 +181,7 @@
         "Reopen the record and confirm the corrected transcription persists with its status.",
         "Confirm the original source-acquired text layer is still preserved separately."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F013",

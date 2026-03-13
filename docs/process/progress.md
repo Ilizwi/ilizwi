@@ -4,9 +4,9 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 11 |
-| Remaining | 13 |
-| Current Day | 2 |
+| Completed | 12 |
+| Remaining | 12 |
+| Current Day | 3 |
 
 ## Day 1: Foundation
 **Status:** Complete
@@ -25,7 +25,7 @@
 ---
 
 ## Day 2: Source and Text Foundations
-**Status:** In Progress
+**Status:** Complete
 
 - [x] F006: Ibali Source Integration — PASSED
 - [x] F007: NLSA Source Integration — PASSED
@@ -39,9 +39,9 @@
 ---
 
 ## Day 3: Transcription and Translation
-**Status:** Not Started
+**Status:** In Progress
 
-- [ ] F012: Transcription Editor and Review Status
+- [x] F012: Transcription Editor and Review Status — PASSED
 - [ ] F013: Machine Translation Draft Generation
 - [ ] F014: Translation Editor and Correction Workflow
 - [ ] F015: Translation Memory
@@ -110,6 +110,14 @@
 - Records list shows canonical_ref in monospace column
 - Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
 - All 5 PRD test steps satisfied. F004 PASSED.
+
+### Session 13 — 2026-03-13
+- F012: Transcription Editor and Review Status — implemented via parallel subagent team (5 tasks), code reviewed (2 findings fixed), squash merged to main (PR #12)
+- Migration `20260313000004`: immutability trigger guarding `id` + 8 fields with `IS DISTINCT FROM`; membership-only UPDATE RLS policy (no super_admin — matches SELECT boundary)
+- New: `updateLayerStatus` action (membership-only, status-field-only UPDATE); `TranscriptionEditorForm` (pre-filled from source layer, creation-time status select); `UpdateLayerStatusForm` (inline post-creation status update)
+- Modified: `addTextLayer` — optional creation-time status with strict validation; `TextLayerCard` — both forms wired, mutually exclusive state, "Edit / Transcribe" button on source layers
+- Review fixes: `id` added to immutability guard; super_admin bypass removed from action + policy
+- All 5 PRD steps satisfied. F012 PASSED. Day 3 in progress (1/5).
 
 ### Session 12 — 2026-03-13
 - F008: Wits Supplementary Source Intake — implemented via 2-agent parallel team, code reviewed (2 rounds, P1 + P2 addressed), squash merged to main (PR #11)

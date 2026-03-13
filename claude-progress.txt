@@ -4,9 +4,9 @@
 
 ## Current State
 As of: 2026-03-13
-Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011
-Day 1 complete. Day 2 complete.
-Next: F012 — Transcription Editor and Review Status (P0, Day 3)
+Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012
+Day 1 complete. Day 2 complete. Day 3 in progress (1/5 features done).
+Next: F013 — Machine Translation Draft Generation (P0, Day 3)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -16,16 +16,18 @@ Next: F012 — Transcription Editor and Review Status (P0, Day 3)
 - F005: Canonical Record Creation — PASSED (2026-03-13)
 - F006: Ibali Source Integration — PASSED (2026-03-13)
 - F007: NLSA Source Integration — PASSED (2026-03-13)
+- F008: Wits Supplementary Source Intake — PASSED (2026-03-13)
 - F009: Source File Viewer — PASSED (2026-03-13)
 - F010: OCR and Source Text Acquisition Layer — PASSED (2026-03-13)
 - F011: Text Layer Management — PASSED (2026-03-13)
+- F012: Transcription Editor and Review Status — PASSED (2026-03-13)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
 ## Next Actions
-- F012: Transcription Editor and Review Status (P0, Day 3) — next unblocked P0
+- F013: Machine Translation Draft Generation (P0, Day 3) — next unblocked P0
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -34,6 +36,19 @@ Next: F012 — Transcription Editor and Review Status (P0, Day 3)
   This cleanup is now part of F005 rather than a separate debt sprint
 
 ---
+
+### Session 13 — 2026-03-13
+- F012: Transcription Editor and Review Status — implemented via parallel subagent team (5 tasks, Tasks 1+2 parallel, 3+4 parallel, 5 sequential), code reviewed (2 findings, 1 fix commit), squash merged to main (PR #12)
+- Migration `20260313000004`: `enforce_text_layers_immutability()` BEFORE UPDATE trigger guards `id` + 8 other immutable fields with `IS DISTINCT FROM` (null-safe for `language`, `supersedes_layer_id`); `text_layers_update_status` UPDATE RLS policy — membership-only (no super_admin bypass; consistent with membership-only SELECT policy)
+- New server action `updateLayerStatus`: reads `layerId`/`newStatus` from formData; validates against full `VALID_LAYER_STATUSES` enum; derives `record_id`/`project_id` from DB via join (no client-trusted routing); direct membership-only permission check (not `assertLayerPermission` — avoids super_admin boundary mismatch with SELECT policy); UPDATE payload contains only `{ status }` field; audit log + revalidatePath
+- Extended `addTextLayer`: accepts optional creation-time `status` — absent → `raw` (backward compat); present + invalid → error (not silent coerce, per addendum); `VALID_CREATION_STATUSES = ["raw", "reviewed", "needs_expert_review"]`
+- New component `TranscriptionEditorForm`: props `recordId`, `sourceContent`, `sourceLanguage`, `onClose`; hidden `layerType=corrected_transcription`, `sourceMethod=manual_entry` (no supersedes_layer_id); pre-filled textarea; status select with creation-time options; auto-close on success via useEffect + submitted ref pattern
+- New component `UpdateLayerStatusForm`: props `layerId`, `currentStatus`, `canUpdate`; renders null if `canUpdate=false`; full 5-option status select; inline error display; compact layout
+- Modified `TextLayerCard`: imports both new forms; `showTranscribeForm` state (mutually exclusive with `showVersionForm`); "Edit / Transcribe" button on `source_ocr`/`source_transcription` active layers; `UpdateLayerStatusForm` on all active layers above action row
+- Review P1 fix: added `NEW.id IS DISTINCT FROM OLD.id` to immutability trigger
+- Review P2 fix: removed `is_super_admin()` from UPDATE policy and `assertLayerPermission` bypass from `updateLayerStatus` — aligns write boundary with membership-only SELECT policy; documented in both migration and action
+- Build, typecheck, lint all pass. All 5 PRD test steps satisfied. F012 PASSED.
+- plan/2026-03-13-f012-transcription-editor-review-status.md written
 
 ### Session 12 — 2026-03-13
 - F008: Wits Supplementary Source Intake — implemented via parallel agent team (2 agents), squash merged to main

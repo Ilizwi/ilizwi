@@ -84,6 +84,14 @@ export default async function ProjectDetailPage({
               Import from Ibali &rarr;
             </Link>
           )}
+          {(isAdmin || callerMembership?.role === "researcher") && (
+            <Link
+              href={`/projects/${id}/import/nlsa`}
+              className="text-sm font-sans text-desk-text underline underline-offset-2"
+            >
+              Import from NLSA &rarr;
+            </Link>
+          )}
         </div>
       </div>
 

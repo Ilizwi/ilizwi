@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { generateMachineTranslation } from "@/lib/actions/generate-translation";
-import { TARGET_LANGUAGE_ALLOWLIST } from "@/lib/translation/google-translate";
+import { TARGET_LANGUAGE_ALLOWLIST } from "@/lib/translation/translation-constants";
 
 type Props = {
   recordId: string;

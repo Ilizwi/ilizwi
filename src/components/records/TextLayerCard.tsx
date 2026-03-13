@@ -5,7 +5,7 @@ import type { TextLayer, LayerType, LayerStatus } from "@/types";
 import CreateLayerVersionForm from "./CreateLayerVersionForm";
 import TranscriptionEditorForm from "./TranscriptionEditorForm";
 import UpdateLayerStatusForm from "./UpdateLayerStatusForm";
-import { PROVIDER_DISPLAY_LABELS } from "@/lib/translation/google-translate";
+import { PROVIDER_DISPLAY_LABELS } from "@/lib/translation/translation-constants";
 
 const LAYER_TYPE_LABELS: Record<LayerType, string> = {
   source_ocr: "Source OCR",

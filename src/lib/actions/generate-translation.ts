@@ -36,11 +36,10 @@ export async function generateMachineTranslation(
 
   if (!recordId) return { error: "Record ID is required." };
 
-  const targetLanguage: TargetLanguage = TARGET_LANGUAGE_ALLOWLIST.includes(
-    targetLanguageRaw as TargetLanguage
-  )
-    ? (targetLanguageRaw as TargetLanguage)
-    : "en";
+  if (!TARGET_LANGUAGE_ALLOWLIST.includes(targetLanguageRaw as TargetLanguage)) {
+    return { error: `Invalid target language: "${targetLanguageRaw}". Supported: ${TARGET_LANGUAGE_ALLOWLIST.join(", ")}.` };
+  }
+  const targetLanguage = targetLanguageRaw as TargetLanguage;
 
   // 2. Resolve project_id from record — server-derived, no client trust
   const { data: record } = await supabase
@@ -94,7 +93,7 @@ export async function generateMachineTranslation(
   if (hasActiveMt) {
     return {
       error:
-        "A machine translation draft already exists. To regenerate, create a new version from the existing layer manually.",
+        "An active machine translation draft already exists for this record. Regeneration is not available in this version.",
     };
   }
 

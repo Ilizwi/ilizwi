@@ -1,5 +1,6 @@
 // Google Cloud Translation v2 (REST, API key auth)
-// No "use server" directive — this module is imported by the server action only.
+// Server-only — do NOT import this module from client components.
+// UI constants (allowlist, display labels) live in translation-constants.ts.
 
 export type TranslateResult =
   | { ok: true; translation: string; provider: string }
@@ -7,10 +8,9 @@ export type TranslateResult =
 
 export const PROVIDER_NAME = "google_cloud_translation";
 
-// Canonical display label map — import from here in components, never inline
-export const PROVIDER_DISPLAY_LABELS: Record<string, string> = {
-  google_cloud_translation: "Google Translate",
-};
+import type { TargetLanguage } from "./translation-constants";
+export type { TargetLanguage } from "./translation-constants";
+export { TARGET_LANGUAGE_ALLOWLIST } from "./translation-constants";
 
 // Allowlist of Google Translate API language codes relevant to this corpus.
 // Source: https://cloud.google.com/translate/docs/languages
@@ -20,10 +20,6 @@ const SUPPORTED_SOURCE_LANGS = new Set([
   "af", "zu", "xh", "st", "sn", "sw", // African languages
   "nl", "en", "fr", "de", "pt", "la", // European/colonial languages likely in corpus
 ]);
-
-// Target language allowlist for V1
-export const TARGET_LANGUAGE_ALLOWLIST = ["en", "af", "fr", "de", "pt"] as const;
-export type TargetLanguage = (typeof TARGET_LANGUAGE_ALLOWLIST)[number];
 
 export async function translateWithGoogle(
   text: string,

@@ -82,15 +82,7 @@ CREATE POLICY "text_layers_insert_contributor"
     )
   );
 
--- UPDATE: creator or super_admin may update (for status transitions).
--- NOTE: content is treated as immutable at the application layer.
--- This policy exists only for status transitions; new content should
--- be inserted as a new layer that supersedes the previous one.
-CREATE POLICY "text_layers_update_owner"
-  ON text_layers FOR UPDATE
-  USING (
-    created_by = auth.uid() OR is_super_admin()
-  )
-  WITH CHECK (
-    created_by = auth.uid() OR is_super_admin()
-  );
+-- No UPDATE policy for F005. Text layer content is immutable — new versions
+-- are created as new rows using supersedes_layer_id. A status-only UPDATE
+-- policy should be added in a later feature with DB-level column enforcement
+-- and a current-project-membership check.

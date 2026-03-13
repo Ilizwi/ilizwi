@@ -49,7 +49,6 @@ export async function addTextLayer(
   const supabase = await createClient();
 
   const recordId = formData.get("recordId") as string;
-  const projectId = formData.get("projectId") as string;
   const layerType = formData.get("layerType") as string;
   const content = ((formData.get("content") as string) ?? "").trim();
   const languageRaw = ((formData.get("language") as string) ?? "").trim();
@@ -62,6 +61,15 @@ export async function addTextLayer(
   if (!VALID_LAYER_TYPES.includes(layerType as (typeof VALID_LAYER_TYPES)[number])) {
     return { error: "Invalid layer type" };
   }
+
+  // Derive projectId from the record — do not trust client-supplied projectId
+  const { data: record } = await supabase
+    .from("source_records")
+    .select("project_id")
+    .eq("id", recordId)
+    .single();
+  if (!record) return { error: "Record not found" };
+  const projectId = record.project_id;
 
   // Permission check
   const permError = await assertLayerPermission(supabase, projectId, profile.id);

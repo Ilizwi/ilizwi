@@ -127,6 +127,11 @@ export type FileAsset = {
   uploaded_at: string;
 };
 
+export type EnrichedFileAsset = FileAsset & {
+  view_url: string | null;
+  view_url_error?: string | null;
+};
+
 export type TextLayer = {
   id: string;
   record_id: string;

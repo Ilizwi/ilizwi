@@ -9,7 +9,7 @@ import {
   appendCollisionSuffix,
   MAX_COLLISION_RETRIES,
 } from "@/lib/records/canonical-ref";
-import { fetchWitsItem, validateWitsRef } from "@/lib/sources/wits";
+import { fetchWitsItem, validateWitsRef, normalizeWitsRef } from "@/lib/sources/wits";
 
 // --- Permission guard (mirrors assertImportPermission in import-nlsa.ts exactly) ---
 
@@ -70,32 +70,36 @@ export async function importFromWits(
 
   if (!projectId) return { error: "Project ID is required" };
 
-  // Validate OAI identifier format
+  // Validate OAI identifier format (both short and long forms accepted)
   if (!validateWitsRef(witsRef)) {
     return {
       error:
-        "Enter a valid Wits OAI identifier. Format: oai:researcharchives.wits.ac.za:443:{id}",
+        "Enter a valid Wits OAI identifier. Accepted formats: oai:researcharchives.wits.ac.za:{id} or oai:researcharchives.wits.ac.za:443:{id}",
     };
   }
+
+  // Normalise to canonical long form before idempotency check and storage.
+  // Both input forms map to the same stored identifier, preventing duplicates.
+  const canonicalRef = normalizeWitsRef(witsRef);
 
   // Permission check (server-side — not UI-only)
   const permError = await assertImportPermission(supabase, projectId, profile.id);
   if (permError) return { error: permError };
 
-  // Idempotency check — return existing record if already imported
+  // Idempotency check — use normalized identifier so both input forms resolve to same record
   const { data: existing } = await supabase
     .from("source_records")
     .select("id")
     .eq("project_id", projectId)
     .eq("source_type", "wits")
-    .eq("source_identifier", witsRef)
+    .eq("source_identifier", canonicalRef)
     .maybeSingle();
   if (existing) return { error: null, recordId: existing.id };
 
-  // Fetch from Wits OAI-PMH endpoint
-  const itemResult = await fetchWitsItem(witsRef);
+  // Fetch from Wits OAI-PMH endpoint (use normalized ref for the OAI request)
+  const itemResult = await fetchWitsItem(canonicalRef);
   if (!itemResult.ok) {
-    return { error: witsErrorMessage(itemResult.error, witsRef) };
+    return { error: witsErrorMessage(itemResult.error, canonicalRef) };
   }
 
   const mapped = itemResult.data;
@@ -110,8 +114,8 @@ export async function importFromWits(
     };
   }
 
-  // Generate canonical ref using synthesised date
-  const baseRef = generateCanonicalRef({
+  // Generate canonical record ref using synthesised date
+  const baseRecordRef = generateCanonicalRef({
     source_type: "wits",
     publication_title: mapped.title,
     date_issued: mapped.date_extracted,
@@ -125,24 +129,24 @@ export async function importFromWits(
   // Collision on canonical_ref is expected for Wits records with date ranges
   // (multiple records for the same publication+year produce identical refs).
   // The retry loop (r2–r9) handles this correctly.
-  let canonicalRef = baseRef;
+  let recordRef = baseRecordRef;
   let recordError: { message: string; code?: string } | null = null;
   for (let attempt = 1; attempt <= MAX_COLLISION_RETRIES; attempt++) {
-    canonicalRef = attempt === 1 ? baseRef : appendCollisionSuffix(baseRef, attempt);
+    recordRef = attempt === 1 ? baseRecordRef : appendCollisionSuffix(baseRecordRef, attempt);
     const { error } = await supabase.from("source_records").insert({
       id: recordId,
       project_id: projectId,
       source_type: "wits",
       source_archive: "Wits",
-      source_identifier: witsRef,
-      source_url: null,                    // no canonical record URL for Wits
+      source_identifier: canonicalRef,     // normalised OAI identifier
+      source_url: mapped.landing_url,      // first landing-page URL from dc:identifier (provenance)
       publication_title: mapped.title,
       language: mapped.language ?? "und",
       date_issued: mapped.date_extracted,
       date_issued_raw: mapped.date_raw,    // verbatim dc:date — provenance preserved
       volume: null,
       issue_number: null,
-      canonical_ref: canonicalRef,
+      canonical_ref: recordRef,
       created_by: profile.id,
     });
     if (!error) { recordError = null; break; }
@@ -201,7 +205,7 @@ export async function importFromWits(
   // No text_layers insert — Wits is metadata-only; OAI-DC carries no OCR text.
 
   console.log(
-    `[importFromWits] actor=${profile.id} wits_ref=${witsRef} record=${recordId} ref=${canonicalRef} project=${projectId}`
+    `[importFromWits] actor=${profile.id} wits_ref=${canonicalRef} record=${recordId} ref=${recordRef} project=${projectId}`
   );
 
   revalidatePath(`/projects/${projectId}/records`);

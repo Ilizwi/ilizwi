@@ -24,16 +24,29 @@ export type MappedWitsItem = {
   date_extracted: string | null; // YYYY-MM-DD synthesised value for date_issued column
   language: string | null;
   description: string | null;
-  oai_identifier: string;
+  oai_identifier: string;        // normalised canonical form (always includes :443:)
+  landing_url: string | null;    // first https:// landing-page URL from dc:identifier (not a file URL)
   file_url: string | null;       // only set if dc:identifier contains a file-extension URL
 };
 
-// --- OAI identifier validation ---
-// Accepts only: oai:researcharchives.wits.ac.za:443:{anything}
-const WITS_OAI_ID_PATTERN = /^oai:researcharchives\.wits\.ac\.za:443:.+$/;
+// --- OAI identifier validation and normalisation ---
+// The Wits OAI endpoint advertises two equivalent identifier shapes:
+//   Short:  oai:researcharchives.wits.ac.za:{id}          (from Identify sampleIdentifier)
+//   Long:   oai:researcharchives.wits.ac.za:443:{id}      (from GetRecord header response)
+// Both are accepted as input. Both are normalised to the long (:443:) form before
+// storage — that is the canonical form the server itself returns.
+const WITS_SHORT_PATTERN = /^oai:researcharchives\.wits\.ac\.za:(?!443:)(.+)$/;
+const WITS_LONG_PATTERN  = /^oai:researcharchives\.wits\.ac\.za:443:.+$/;
 
 export function validateWitsRef(ref: string): boolean {
-  return WITS_OAI_ID_PATTERN.test(ref);
+  return WITS_LONG_PATTERN.test(ref) || WITS_SHORT_PATTERN.test(ref);
+}
+
+// Normalise to the canonical long form. Idempotent on already-long identifiers.
+export function normalizeWitsRef(ref: string): string {
+  const short = ref.match(WITS_SHORT_PATTERN);
+  if (short) return `oai:researcharchives.wits.ac.za:443:${short[1]}`;
+  return ref; // already long form
 }
 
 // --- Field normalisation helpers ---
@@ -64,20 +77,25 @@ function extractDate(raw: string | null): { date_extracted: string | null } {
   return { date_extracted: null };
 }
 
-// --- File URL detection ---
-// Scans dc:identifier[] for entries whose last path segment has a file extension.
+// --- File and landing-page URL detection ---
+// Scans dc:identifier[] for HTTP(S) URLs.
+// - file_url: first entry whose last path segment has a downloadable file extension
+// - landing_url: first plain HTTP(S) URL that is NOT a file-extension URL (record page link)
 const FILE_EXTENSION_PATTERN = /\.(pdf|jpg|jpeg|png|tiff|tif)$/i;
 
-function extractFileUrl(identifiers: string[]): string | null {
+function extractUrls(identifiers: string[]): { file_url: string | null; landing_url: string | null } {
+  let file_url: string | null = null;
+  let landing_url: string | null = null;
   for (const id of identifiers) {
-    try {
-      const lastSegment = id.split("/").pop() ?? "";
-      if (FILE_EXTENSION_PATTERN.test(lastSegment)) return id;
-    } catch {
-      // ignore malformed entries
+    if (!id.startsWith("http://") && !id.startsWith("https://")) continue;
+    const lastSegment = id.split("/").pop() ?? "";
+    if (FILE_EXTENSION_PATTERN.test(lastSegment)) {
+      if (!file_url) file_url = id;
+    } else {
+      if (!landing_url) landing_url = id;
     }
   }
-  return null;
+  return { file_url, landing_url };
 }
 
 // --- OAI-DC mapper ---
@@ -91,7 +109,7 @@ function mapOaiDcRecord(
   const language = toStringOrNull(dc["dc:language"]);
   const description = toStringOrNull(dc["dc:description"]);
   const identifiers = toStringArray(dc["dc:identifier"]);
-  const file_url = extractFileUrl(identifiers);
+  const { file_url, landing_url } = extractUrls(identifiers);
 
   return {
     title,
@@ -100,6 +118,7 @@ function mapOaiDcRecord(
     language,
     description,
     oai_identifier: oaiIdentifier,
+    landing_url,
     file_url,
   };
 }

@@ -32,7 +32,17 @@ export async function saveTranslationCorrection(
     return { error: "Source layer must be a machine translation." };
   }
 
-  // 3. Derive record and project — server-derived, no client trust
+  // 3. Verify the source MT layer is active (not superseded by another layer)
+  const { count: supersedingCount } = await supabase
+    .from("text_layers")
+    .select("id", { count: "exact", head: true })
+    .eq("supersedes_layer_id", sourceLayerId);
+
+  if (supersedingCount && supersedingCount > 0) {
+    return { error: "Source layer is superseded and cannot be corrected." };
+  }
+
+  // 5. Derive record and project — server-derived, no client trust
   const recordId = sourceLayer.record_id;
   const language = sourceLayer.language;
 
@@ -45,7 +55,7 @@ export async function saveTranslationCorrection(
   if (!record) return { error: "Record not found." };
   const projectId = record.project_id;
 
-  // 4. Permission check — membership-only
+  // 6. Permission check — membership-only
   const { data: membership } = await supabase
     .from("project_memberships")
     .select("role")
@@ -63,7 +73,7 @@ export async function saveTranslationCorrection(
     };
   }
 
-  // 5. Insert corrected_translation layer
+  // 7. Insert corrected_translation layer
   const { data: newLayer, error: insertError } = await supabase
     .from("text_layers")
     .insert({
@@ -83,7 +93,7 @@ export async function saveTranslationCorrection(
     return { error: "Failed to save corrected translation layer." };
   }
 
-  // 6. Audit log
+  // 8. Audit log
   console.log("[audit] save_translation_correction", {
     actor: profile.id,
     new_layer_id: newLayer.id,
@@ -92,7 +102,7 @@ export async function saveTranslationCorrection(
     project_id: projectId,
   });
 
-  // 7. Revalidate record page
+  // 9. Revalidate record page
   revalidatePath(`/projects/${projectId}/records/${recordId}`);
 
   return { error: null };

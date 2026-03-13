@@ -106,16 +106,21 @@ export default async function RecordDetailPage({
 
   // Permission: can add text layer?
   let canAddLayer = profile.global_role === "super_admin";
-  if (!canAddLayer) {
+  let canCorrectTranslation = profile.global_role === "super_admin";
+  if (!canAddLayer || !canCorrectTranslation) {
     const { data: membership } = await supabase
       .from("project_memberships")
       .select("role")
       .eq("project_id", id)
       .eq("user_id", profile.id)
       .single();
-    canAddLayer =
+    canAddLayer = canAddLayer ||
       membership?.role === "project_admin" ||
       membership?.role === "researcher";
+    canCorrectTranslation = canCorrectTranslation ||
+      membership?.role === "project_admin" ||
+      membership?.role === "researcher" ||
+      membership?.role === "translator";
   }
 
   const statusBadge = (status: string) => {
@@ -212,6 +217,7 @@ export default async function RecordDetailPage({
                   layer={l}
                   isSuperseded={false}
                   canAddLayer={canAddLayer}
+                  canCorrectTranslation={canCorrectTranslation}
                   recordId={recordId}
                 />
               ))}
@@ -229,6 +235,7 @@ export default async function RecordDetailPage({
                       layer={l}
                       isSuperseded={true}
                       canAddLayer={canAddLayer}
+                      canCorrectTranslation={canCorrectTranslation}
                       recordId={recordId}
                     />
                   ))}

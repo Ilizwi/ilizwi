@@ -211,7 +211,7 @@
         "Confirm the original machine translation draft remains preserved separately.",
         "Reopen the record and verify both translation versions are still accessible."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F015",

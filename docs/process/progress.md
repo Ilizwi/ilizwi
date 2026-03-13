@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 13 |
-| Remaining | 11 |
+| Completed | 14 |
+| Remaining | 10 |
 | Current Day | 3 |
 
 ## Day 1: Foundation
@@ -43,7 +43,7 @@
 
 - [x] F012: Transcription Editor and Review Status — PASSED
 - [x] F013: Machine Translation Draft Generation — PASSED
-- [ ] F014: Translation Editor and Correction Workflow
+- [x] F014: Translation Editor and Correction Workflow — PASSED
 - [ ] F015: Translation Memory
 - [ ] F016: Protected-Term and Glossary Rules
 
@@ -110,6 +110,15 @@
 - Records list shows canonical_ref in monospace column
 - Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
 - All 5 PRD test steps satisfied. F004 PASSED.
+
+### Session 15 — 2026-03-13
+- F014: Translation Editor and Correction Workflow — implemented via 3-agent parallel team, clean build, PR created
+- New RLS policy `text_layers_insert_translator_correction`: translator role scoped to `corrected_translation` only; mirrors existing contributor policy shape
+- New `saveTranslationCorrection` server action: session-bound client; derives language/record/project server-side; allows project_admin, researcher, translator; inserts `corrected_translation` with `source_layer_id` provenance link; no supersession
+- New `TranslationEditorForm`: language read-only (not submitted); mirrors TranscriptionEditorForm pattern; auto-close on success
+- `TextLayerCard`: `canCorrectTranslation` prop; "Correct Translation" button on active machine_translation layers; translator-only users see the button
+- Record detail page: `canCorrectTranslation` derived from single membership query; translator role included
+- All 5 PRD test steps satisfied. Day 3: 3/5. F014 PASSED.
 
 ### Session 14 — 2026-03-13
 - F013: Machine Translation Draft Generation — implemented via 3-agent parallel team, code reviewed (3 findings fixed), squash merged to main (PR #13)

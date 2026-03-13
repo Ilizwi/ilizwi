@@ -54,6 +54,8 @@ export async function addTextLayer(
   const languageRaw = ((formData.get("language") as string) ?? "").trim();
   const language = languageRaw || null;
   const sourceMethod = (formData.get("sourceMethod") as string) || "manual_entry";
+  const supersedesRaw = ((formData.get("supersedes_layer_id") as string) ?? "").trim();
+  const supersedesLayerId = supersedesRaw || null;
 
   // Validation
   if (!recordId) return { error: "Record ID is required" };
@@ -75,6 +77,22 @@ export async function addTextLayer(
   const permError = await assertLayerPermission(supabase, projectId, profile.id);
   if (permError) return { error: permError };
 
+  // Validate supersedes_layer_id if provided
+  if (supersedesLayerId) {
+    const { data: supersededLayer } = await supabase
+      .from("text_layers")
+      .select("record_id, layer_type")
+      .eq("id", supersedesLayerId)
+      .single();
+    if (!supersededLayer) return { error: "Superseded layer not found" };
+    if (supersededLayer.record_id !== recordId) {
+      return { error: "Superseded layer does not belong to this record" };
+    }
+    if (supersededLayer.layer_type !== layerType) {
+      return { error: "Layer type mismatch — a version must have the same type as the layer it supersedes" };
+    }
+  }
+
   // Insert text layer
   const { data: row, error } = await supabase
     .from("text_layers")
@@ -86,6 +104,7 @@ export async function addTextLayer(
       status: "raw",
       source_method: sourceMethod,
       created_by: profile.id,
+      supersedes_layer_id: supersedesLayerId,
     })
     .select("id")
     .single();
@@ -93,7 +112,7 @@ export async function addTextLayer(
   if (error) return { error: `Layer creation failed: ${error.message}` };
 
   console.log(
-    `[addTextLayer] actor=${profile.id} added layer=${row.id} type=${layerType} to record=${recordId} project=${projectId}`
+    `[addTextLayer] actor=${profile.id} added layer=${row.id} type=${layerType} to record=${recordId} project=${projectId}${supersedesLayerId ? ` supersedes=${supersedesLayerId}` : ""}`
   );
 
   revalidatePath(`/projects/${projectId}/records/${recordId}`);

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import type { TextLayer, LayerType, LayerStatus } from "@/types";
 import CreateLayerVersionForm from "./CreateLayerVersionForm";
+import TranscriptionEditorForm from "./TranscriptionEditorForm";
+import UpdateLayerStatusForm from "./UpdateLayerStatusForm";
 
 const LAYER_TYPE_LABELS: Record<LayerType, string> = {
   source_ocr: "Source OCR",
@@ -34,6 +36,7 @@ export default function TextLayerCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const [showVersionForm, setShowVersionForm] = useState(false);
+  const [showTranscribeForm, setShowTranscribeForm] = useState(false);
 
   return (
     <div className={`border border-desk-border rounded-[2px] p-4 ${isSuperseded ? "opacity-60" : ""}`}>
@@ -87,10 +90,28 @@ export default function TextLayerCard({
         )}
       </div>
 
-      {/* Create New Version */}
+      {/* Status update — shown on all active layers if canAddLayer */}
       {canAddLayer && !isSuperseded && (
-        <div className="mt-4">
-          {showVersionForm ? (
+        <div className="mt-3">
+          <UpdateLayerStatusForm
+            layerId={layer.id}
+            currentStatus={layer.status}
+            canUpdate={true}
+          />
+        </div>
+      )}
+
+      {/* Action forms — Edit/Transcribe button for source layers + Create New Version for all */}
+      {canAddLayer && !isSuperseded && (
+        <div className="mt-4 space-y-2">
+          {showTranscribeForm ? (
+            <TranscriptionEditorForm
+              recordId={recordId}
+              sourceContent={layer.content}
+              sourceLanguage={layer.language}
+              onClose={() => setShowTranscribeForm(false)}
+            />
+          ) : showVersionForm ? (
             <CreateLayerVersionForm
               recordId={recordId}
               supersedesLayerId={layer.id}
@@ -99,12 +120,22 @@ export default function TextLayerCard({
               onClose={() => setShowVersionForm(false)}
             />
           ) : (
-            <button
-              onClick={() => setShowVersionForm(true)}
-              className="text-xs font-sans px-3 py-1.5 border border-desk-border rounded-[2px] text-desk-muted hover:text-desk-text hover:border-desk-text transition-colors"
-            >
-              Create New Version
-            </button>
+            <div className="flex gap-2 flex-wrap">
+              {(layer.layer_type === "source_ocr" || layer.layer_type === "source_transcription") && (
+                <button
+                  onClick={() => { setShowTranscribeForm(true); setShowVersionForm(false); }}
+                  className="text-xs font-sans px-3 py-1.5 border border-desk-border rounded-[2px] text-desk-muted hover:text-desk-text hover:border-desk-text transition-colors"
+                >
+                  Edit / Transcribe
+                </button>
+              )}
+              <button
+                onClick={() => { setShowVersionForm(true); setShowTranscribeForm(false); }}
+                className="text-xs font-sans px-3 py-1.5 border border-desk-border rounded-[2px] text-desk-muted hover:text-desk-text hover:border-desk-text transition-colors"
+              >
+                Create New Version
+              </button>
+            </div>
           )}
         </div>
       )}

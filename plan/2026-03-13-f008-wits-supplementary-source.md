@@ -1,6 +1,6 @@
 # Plan: F008 — Wits Supplementary Source Intake
 Date: 2026-03-13
-Status: APPROVED WITH ADDENDUMS
+Status: COMPLETE — PASSED (PR #11, squash merged to main 2026-03-13)
 
 ## Context
 F009, F010, F011 are all complete. Under the temporary sequencing rule, F008 is next. F008 is P1/secondary — Wits is a supplementary archival source (not a structured newspaper API like Ibali/NLSA). It provides metadata via OAI-PMH and selective digital objects.

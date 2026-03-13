@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 10 |
-| Remaining | 14 |
+| Completed | 11 |
+| Remaining | 13 |
 | Current Day | 2 |
 
 ## Day 1: Foundation
@@ -29,12 +29,12 @@
 
 - [x] F006: Ibali Source Integration — PASSED
 - [x] F007: NLSA Source Integration — PASSED
-- [ ] F008: Wits Supplementary Source Intake
+- [x] F008: Wits Supplementary Source Intake — PASSED
 - [x] F009: Source File Viewer — PASSED
 - [x] F010: OCR and Source Text Acquisition Layer — PASSED
 - [x] F011: Text Layer Management — PASSED
 
-**Deliverable:** Source ingestion flows working with preserved file/text layers
+**Deliverable:** Source ingestion flows working with preserved file/text layers — Day 2 complete
 
 ---
 
@@ -110,6 +110,20 @@
 - Records list shows canonical_ref in monospace column
 - Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
 - All 5 PRD test steps satisfied. F004 PASSED.
+
+### Session 12 — 2026-03-13
+- F008: Wits Supplementary Source Intake — implemented via 2-agent parallel team, code reviewed (2 rounds, P1 + P2 addressed), squash merged to main (PR #11)
+- No DB migration required — `source_type='wits'` already in ENUM; `source_identifier`, `source_url`, `file_assets` XOR constraint all in place from F006; `date_issued_raw` column present from existing schema
+- New adapter `src/lib/sources/wits.ts`: OAI-PMH XML parse via `fast-xml-parser`; `validateWitsRef` accepts both short and long OAI identifier forms; `normalizeWitsRef` converts both to canonical `:443:` form before storage; explicit single-vs-array normalisation for all `dc:` fields; `extractDate` tries strict ISO then year-level fallback (`YYYY-01-01`), `date_raw` always verbatim; `extractUrls` separates `file_url` (downloadable file) from `landing_url` (record page) in `dc:identifier[]`
+- New server action `src/lib/actions/import-wits.ts`: permission guard (super_admin bypass + role check); normalizes OAI ref before idempotency lookup; `source_records` insert with `source_type='wits'`, `source_archive='Wits'`, `source_url=mapped.landing_url` (provenance link), `date_issued_raw=verbatim dc:date`; canonical ref collision retry r2–r9 (expected for year-range dates); `file_assets` insert conditional on `file_url !== null` (metadata-only path skips asset); no text_layers; compensating rollback
+- New import page `src/app/(app)/projects/[id]/import/wits/page.tsx`: server component, role gate, inline access-denied for translator/reviewer
+- New form `src/components/records/WitsImportForm.tsx`: `useActionState`; placeholder shows official short form; hint documents both accepted formats
+- Modified `src/app/(app)/projects/[id]/page.tsx`: "Import from Wits →" link, same researcher/admin gate
+- P1 fix (review round 2): dual identifier form support + normalisation
+- P2 fix (review round 2): `landing_url` extracted and persisted to `source_records.source_url`
+- `fast-xml-parser` added to dependencies
+- Live OAI contract verified: `historic_99960` `dc:date="1955 - 1959"` confirmed year-extraction path; `dc:identifier` contains only landing pages — metadata-only is V1 standard
+- All 5 PRD test steps satisfied. Day 2 complete. F008 PASSED.
 
 ### Session 11 — 2026-03-13
 - F011 Text Layer Management — implemented via 3-agent parallel team, code reviewed (3 findings, 2 commits), squash merged to main (PR #10)

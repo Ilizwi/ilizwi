@@ -166,7 +166,7 @@
         "View both text layers and confirm their labels, provenance, and status are visible.",
         "Confirm updating one text layer does not overwrite the other."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F012",

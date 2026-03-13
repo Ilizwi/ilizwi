@@ -4,9 +4,9 @@
 
 ## Current State
 As of: 2026-03-13
-Completed: F001, F002, F003, F004, F005, F006, F007, F009, F010
-Next: F011 — Text Layer Management (P0, Day 2)
-Skipped (sequencing): F008 — Wits Supplementary Source Intake (P1, Day 2) — deferred
+Completed: F001, F002, F003, F004, F005, F006, F007, F009, F010, F011
+Next: F008 — Wits Supplementary Source Intake (P1, Day 2) — previously deferred; or F012 — Transcription Editor and Review Status (P0, Day 3)
+Skipped (sequencing): F008 — Wits Supplementary Source Intake (P1, Day 2) — deferred but still pending
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -18,13 +18,15 @@ Skipped (sequencing): F008 — Wits Supplementary Source Intake (P1, Day 2) — 
 - F007: NLSA Source Integration — PASSED (2026-03-13)
 - F009: Source File Viewer — PASSED (2026-03-13)
 - F010: OCR and Source Text Acquisition Layer — PASSED (2026-03-13)
+- F011: Text Layer Management — PASSED (2026-03-13)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
 ## Next Actions
-- F008: Wits Supplementary Source Intake (P1, Day 2)
+- F012: Transcription Editor and Review Status (P0, Day 3) — next unblocked P0
+- F008: Wits Supplementary Source Intake (P1, Day 2) — still deferred
   - Search/harvest Wits metadata for a Panashe-relevant query
   - Store Wits record metadata as source-linked record or discovery entry
   - Link downloadable file or digital object where publicly available
@@ -38,6 +40,18 @@ Skipped (sequencing): F008 — Wits Supplementary Source Intake (P1, Day 2) — 
   This cleanup is now part of F005 rather than a separate debt sprint
 
 ---
+
+### Session 11 — 2026-03-13
+- F011: Text Layer Management — implemented via parallel agent team (3 agents, Tasks 1+2 parallel, Task 3 sequential), code reviewed (3 findings), 2 commits, squash merged to main (PR #10)
+- No DB migration — existing text_layers table with supersedes_layer_id already in place from F005
+- New component: src/components/records/TextLayerCard.tsx — "use client"; dedicated LAYER_TYPE_LABELS and LAYER_STATUS_STYLES maps (separate from record status helper); collapse/expand toggle (300-char preview); "Create New Version" button (canAddLayer && !isSuperseded gate); inline CreateLayerVersionForm via useState; isSuperseded dims card and shows "Superseded" badge
+- New component: src/components/records/CreateLayerVersionForm.tsx — "use client"; useActionState + isPending; layer_type read-only (pre-filled from parent); supersedes_layer_id passed as hidden input; auto-closes on success via useEffect + submitted ref; double-submit prevented via disabled={isPending}
+- Modified: src/lib/actions/text-layers.ts — extracts supersedes_layer_id from formData; validates: layer exists, same record_id, same layer_type (cross-type version chains rejected); supersedes_layer_id included in audit log
+- Modified: src/app/(app)/projects/[id]/records/[recordId]/page.tsx — replaces <table> with TextLayerCard list; derives supersededIds via reverse lookup (new Set of supersedes_layer_id values); active layers rendered first; superseded layers in "Superseded Versions" section; sort descending by created_at
+- Review findings addressed: (P1) layer_type equality check added to supersession validation; (P2) isPending guard added to CreateLayerVersionForm; (P2) supersedes_layer_id added to success log
+- All 5 PRD test steps satisfied. Build, typecheck, lint all pass.
+- plan/2026-03-13-f011-text-layer-management.md written (includes addendums)
+- F011 PASSED.
 
 ### Session 10 — 2026-03-13
 - F010: OCR and Source Text Acquisition Layer — implemented, code reviewed (1 P1 fix), squash merged to main (PR #9)

@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 9 |
-| Remaining | 15 |
+| Completed | 10 |
+| Remaining | 14 |
 | Current Day | 2 |
 
 ## Day 1: Foundation
@@ -32,7 +32,7 @@
 - [ ] F008: Wits Supplementary Source Intake
 - [x] F009: Source File Viewer — PASSED
 - [x] F010: OCR and Source Text Acquisition Layer — PASSED
-- [ ] F011: Text Layer Management
+- [x] F011: Text Layer Management — PASSED
 
 **Deliverable:** Source ingestion flows working with preserved file/text layers
 
@@ -110,6 +110,14 @@
 - Records list shows canonical_ref in monospace column
 - Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
 - All 5 PRD test steps satisfied. F004 PASSED.
+
+### Session 11 — 2026-03-13
+- F011 Text Layer Management — implemented via 3-agent parallel team, code reviewed (3 findings, 2 commits), squash merged to main (PR #10)
+- TextLayerCard: card-based layer display with own type/status label maps, expand/collapse, inline versioning form
+- CreateLayerVersionForm: submit-protected (isPending), auto-close on success, supersedes_layer_id wired correctly
+- addTextLayer() action: validates supersedes_layer_id for same-record AND same-type; logs supersedes_layer_id on success
+- Record detail page: replaces table with cards; reverse-lookup supersededIds; active/superseded split sections
+- All 5 PRD test steps satisfied. F011 PASSED.
 
 ### Session 10 — 2026-03-13
 - F010: OCR and Source Text Acquisition Layer — implemented, code reviewed (1 P1 fix), squash merged to main (PR #9)

@@ -159,9 +159,20 @@ export async function updateLayerStatus(
   const recordId = layerRow.record_id;
   const projectId = (layerRow.source_records as unknown as { project_id: string }).project_id;
 
-  // Permission check
-  const permError = await assertLayerPermission(supabase, projectId, profile.id);
-  if (permError) return { error: permError };
+  // Permission check — membership-only (no super_admin bypass).
+  // The text_layers SELECT policy is membership-only, so a non-member super_admin
+  // cannot read the layer row above. Keeping the write check consistent avoids a
+  // read/write boundary mismatch. super_admin can still add layers via addTextLayer.
+  const { data: membership } = await supabase
+    .from("project_memberships")
+    .select("role")
+    .eq("project_id", projectId)
+    .eq("user_id", profile.id)
+    .single();
+
+  if (!membership || !["project_admin", "researcher"].includes(membership.role)) {
+    return { error: "Insufficient permissions — only project admins and researchers can update layer status" };
+  }
 
   const { error } = await supabase
     .from("text_layers")

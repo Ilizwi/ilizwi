@@ -6,6 +6,7 @@ CREATE OR REPLACE FUNCTION enforce_text_layers_immutability()
 RETURNS TRIGGER AS $$
 BEGIN
   IF (
+    NEW.id                  IS DISTINCT FROM OLD.id                  OR
     NEW.record_id           IS DISTINCT FROM OLD.record_id           OR
     NEW.layer_type          IS DISTINCT FROM OLD.layer_type          OR
     NEW.content             IS DISTINCT FROM OLD.content             OR
@@ -26,12 +27,14 @@ CREATE TRIGGER check_text_layers_immutability
   BEFORE UPDATE ON text_layers
   FOR EACH ROW EXECUTE FUNCTION enforce_text_layers_immutability();
 
--- 3. UPDATE RLS policy — allows project_admin / researcher to update status
+-- 3. UPDATE RLS policy — membership-only (matches SELECT policy boundary)
+--    super_admin is intentionally excluded: the SELECT policy is membership-only,
+--    so a non-member super_admin cannot read text_layers rows to begin with.
+--    Keeping both policies consistent avoids a read/write boundary mismatch.
 CREATE POLICY "text_layers_update_status"
   ON text_layers FOR UPDATE
   USING (
-    is_super_admin()
-    OR EXISTS (
+    EXISTS (
       SELECT 1 FROM source_records sr
       JOIN project_memberships pm ON pm.project_id = sr.project_id
       WHERE sr.id = text_layers.record_id
@@ -40,8 +43,7 @@ CREATE POLICY "text_layers_update_status"
     )
   )
   WITH CHECK (
-    is_super_admin()
-    OR EXISTS (
+    EXISTS (
       SELECT 1 FROM source_records sr
       JOIN project_memberships pm ON pm.project_id = sr.project_id
       WHERE sr.id = text_layers.record_id

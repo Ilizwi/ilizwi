@@ -3,13 +3,15 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import AddTextLayerForm from "@/components/records/AddTextLayerForm";
-import type { SourceRecord, FileAsset, TextLayer, EnrichedFileAsset, Annotation } from "@/types";
+import type { SourceRecord, FileAsset, TextLayer, EnrichedFileAsset, Annotation, RecordFlag } from "@/types";
 import FileViewerSection from "@/components/records/FileViewerSection";
 import ExtractTextSection from "@/components/records/ExtractTextSection";
 import TextLayerCard from "@/components/records/TextLayerCard";
 import GenerateTranslationSection from "@/components/records/GenerateTranslationSection";
 import AnnotationsPanel from "@/components/records/AnnotationsPanel";
 import { addAnnotation, updateAnnotation } from "@/lib/actions/annotations";
+import RecordFlagsPanel from "@/components/records/RecordFlagsPanel";
+import { addRecordFlag, updateRecordFlag, removeRecordFlag } from "@/lib/actions/record-flags";
 
 export default async function RecordDetailPage({
   params,
@@ -20,6 +22,10 @@ export default async function RecordDetailPage({
     editAnnotation?: string;
     addAnnotationError?: string;
     editAnnotationError?: string;
+    editFlag?: string;
+    addFlagError?: string;
+    removeFlagError?: string;
+    updateFlagNoteError?: string;
   }>;
 }) {
   const { id, recordId } = await params;
@@ -167,6 +173,15 @@ export default async function RecordDetailPage({
 
   const annotations = (annotationsData ?? []) as Annotation[];
 
+  // Record flags — fetched with profiles join for author attribution
+  const { data: flagsData } = await supabase
+    .from("record_flags")
+    .select("*, profiles(display_name, email)")
+    .eq("record_id", recordId)
+    .order("created_at", { ascending: false });
+
+  const recordFlags = (flagsData ?? []) as RecordFlag[];
+
   // Permission: can add text layer?
   // canCorrectTranslation is membership-only (no super_admin bypass) —
   // the saveTranslationCorrection action is membership-only and the
@@ -255,6 +270,39 @@ export default async function RecordDetailPage({
       );
     } else {
       redirect(`/projects/${id}/records/${recordId}`);
+    }
+  }
+
+  async function handleAddFlag(formData: FormData) {
+    "use server";
+    const result = await addRecordFlag({ error: null }, formData);
+    if (result.error) {
+      redirect(
+        `/projects/${id}/records/${recordId}?addFlagError=${encodeURIComponent(result.error)}`
+      );
+    }
+  }
+
+  async function handleUpdateFlagNote(formData: FormData) {
+    "use server";
+    const flagId = formData.get("flag_id") as string;
+    const result = await updateRecordFlag({ error: null }, formData);
+    if (result.error) {
+      redirect(
+        `/projects/${id}/records/${recordId}?updateFlagNoteError=${encodeURIComponent(result.error)}&editFlag=${flagId}`
+      );
+    } else {
+      redirect(`/projects/${id}/records/${recordId}`);
+    }
+  }
+
+  async function handleRemoveFlag(formData: FormData) {
+    "use server";
+    const result = await removeRecordFlag({ error: null }, formData);
+    if (result.error) {
+      redirect(
+        `/projects/${id}/records/${recordId}?removeFlagError=${encodeURIComponent(result.error)}`
+      );
     }
   }
 
@@ -426,6 +474,26 @@ export default async function RecordDetailPage({
           editAction={handleUpdateAnnotation}
           addError={resolvedSearch?.addAnnotationError}
           editError={resolvedSearch?.editAnnotationError}
+        />
+      </section>
+
+      {/* Flags */}
+      <section className="mb-8">
+        <h2 className="font-serif text-xl text-desk-text mb-4">Flags</h2>
+        <RecordFlagsPanel
+          flags={recordFlags}
+          textLayers={typedLayers}
+          projectId={id}
+          recordId={recordId}
+          currentUserId={profile.id}
+          canEditAll={canEditAllAnnotations}
+          editFlagId={resolvedSearch?.editFlag}
+          addAction={handleAddFlag}
+          removeAction={handleRemoveFlag}
+          updateNoteAction={handleUpdateFlagNote}
+          addError={resolvedSearch?.addFlagError}
+          removeError={resolvedSearch?.removeFlagError}
+          updateNoteError={resolvedSearch?.updateFlagNoteError}
         />
       </section>
     </div>

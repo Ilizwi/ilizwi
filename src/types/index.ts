@@ -190,3 +190,16 @@ export interface Annotation {
   updated_at: string;
   profiles?: { display_name: string | null; email: string };
 }
+
+export interface RecordFlag {
+  id: string;
+  project_id: string;
+  record_id: string;
+  text_layer_id: string | null;
+  flag_type: FlagType;
+  note: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  profiles?: { display_name: string | null; email: string };
+}

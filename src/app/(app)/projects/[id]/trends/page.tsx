@@ -64,11 +64,12 @@ export default async function TrendsPage({
           defaultValue={language ?? ""}
           className="border border-desk-border rounded-[2px] px-3 py-1.5 text-sm font-sans text-desk-text bg-transparent focus:outline-none focus:border-desk-text"
         >
-          <option value="">All languages</option>
-          <option value="zulu">Zulu</option>
-          <option value="xhosa">Xhosa</option>
-          <option value="sotho">Sotho</option>
-          <option value="english">English</option>
+          <option value="">All Languages</option>
+          <option value="xh">Xhosa (xh)</option>
+          <option value="zu">Zulu (zu)</option>
+          <option value="st">Sotho (st)</option>
+          <option value="nl">Dutch (nl)</option>
+          <option value="en">English (en)</option>
         </select>
         <button
           type="submit"

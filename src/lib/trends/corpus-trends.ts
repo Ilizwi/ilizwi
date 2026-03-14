@@ -70,8 +70,20 @@ export async function getCorpusTrends(
   const rows: TrendRecord[] = records ?? [];
 
   const total = rows.length;
-  const encodedQ = encodeURIComponent(q ?? "");
   const base = `/projects/${projectId}/records`;
+
+  // Build a records URL preserving only the params that are set.
+  // Each bucket overrides its own dimension; active source/language
+  // filters are threaded through so the drill-down reflects the same
+  // analytical slice the chart was based on.
+  function recordsUrl(params: Record<string, string | undefined>): string {
+    const sp = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) {
+      if (v) sp.set(k, v);
+    }
+    const qs = sp.toString();
+    return qs ? `${base}?${qs}` : base;
+  }
 
   // --- byYear ---
   const yearMap = new Map<string, number>();
@@ -86,7 +98,7 @@ export async function getCorpusTrends(
     .map(([label, count]) => ({
       label,
       count,
-      href: `${base}?q=${encodedQ}&date_from=${label}-01-01&date_to=${label}-12-31`,
+      href: recordsUrl({ q: q || undefined, date_from: `${label}-01-01`, date_to: `${label}-12-31`, source, language }),
     }));
 
   // --- byPublication ---
@@ -101,7 +113,9 @@ export async function getCorpusTrends(
     .map(([label, count]) => ({
       label,
       count,
-      href: `${base}?q=${encodeURIComponent(label)}`,
+      // Uses publication title as q (ILIKE match on publication_title) — V1 approximation.
+      // Active source/language context preserved.
+      href: recordsUrl({ q: label, source, language }),
     }));
 
   // --- byLanguage ---
@@ -116,7 +130,8 @@ export async function getCorpusTrends(
     .map(([label, count]) => ({
       label,
       count,
-      href: `${base}?q=${encodedQ}&language=${encodeURIComponent(label)}`,
+      // Bar label IS the language — overrides any active language filter; source preserved.
+      href: recordsUrl({ q: q || undefined, language: label, source }),
     }));
 
   // --- bySource ---
@@ -131,7 +146,8 @@ export async function getCorpusTrends(
     .map(([label, count]) => ({
       label,
       count,
-      href: `${base}?q=${encodedQ}&source=${encodeURIComponent(label)}`,
+      // Bar label IS the source — overrides any active source filter; language preserved.
+      href: recordsUrl({ q: q || undefined, source: label, language }),
     }));
 
   return { total, byYear, byPublication, byLanguage, bySource };

@@ -226,7 +226,7 @@
         "Confirm the system surfaces a prior corrected translation suggestion or reuse alert.",
         "Confirm the user can accept, reject, or edit the suggested reused translation."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F016",

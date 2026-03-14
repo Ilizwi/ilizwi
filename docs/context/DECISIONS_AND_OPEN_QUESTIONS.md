@@ -33,6 +33,17 @@ Last updated: 2026-03-12
 - terminology controls are required
 - uncertainty/dispute visibility is required
 
+### Translation architecture
+
+- **Google Cloud Translation** is the default provider for F013 machine-translation draft generation.
+- **Claude API** is the intended post-stage escalation path for difficult passages, triggered explicitly by the user rather than automatically.
+- Eligible input layers for machine translation are:
+  1. `corrected_transcription`
+  2. `source_transcription`
+  3. `source_ocr`
+- Translation should always use the best available eligible source layer.
+- Machine translation drafts must preserve provider/source-layer provenance and must not silently overwrite prior drafts.
+
 ## Assumptions currently in force
 
 - the client is willing to proceed without direct Readex integration
@@ -68,7 +79,6 @@ Last updated: 2026-03-12
 
 ### Translation workflow
 
-- Which machine translation provider will be used initially?
 - How will translation memory match future text?
   - exact match only
   - fuzzy match

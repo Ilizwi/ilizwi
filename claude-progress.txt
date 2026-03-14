@@ -3,10 +3,10 @@
 # Format: [Date] [Session] - Notes
 
 ## Current State
-As of: 2026-03-13
-Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014
-Day 1 complete. Day 2 complete. Day 3 in progress (3/5 features done).
-Next: F015 — Translation Memory (P0, Day 3)
+As of: 2026-03-14
+Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014, F015
+Day 1 complete. Day 2 complete. Day 3 in progress (4/5 features done).
+Next: F016 — Glossary and Controlled Vocabulary (P0, Day 3)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -21,13 +21,16 @@ Next: F015 — Translation Memory (P0, Day 3)
 - F010: OCR and Source Text Acquisition Layer — PASSED (2026-03-13)
 - F011: Text Layer Management — PASSED (2026-03-13)
 - F012: Transcription Editor and Review Status — PASSED (2026-03-13)
+- F013: Machine Translation Draft Generation — PASSED (2026-03-13)
+- F014: Translation Editor and Correction Workflow — PASSED (2026-03-13)
+- F015: Translation Memory — PASSED (2026-03-14)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
 ## Next Actions
-- F015: Translation Memory (P0, Day 3) — next unblocked P0
+- F016: Glossary and Controlled Vocabulary (P0, Day 3) — next unblocked P0
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -49,6 +52,19 @@ Next: F015 — Translation Memory (P0, Day 3)
 - Both layers (MT draft + corrected_translation) remain active — no supersession, no cross-type linking; both accessible on record reopen
 - Build passes clean (no warnings). All 5 PRD test steps satisfied. F014 PASSED.
 - plan/2026-03-13-f014-translation-editor-correction-workflow.md written (addendums applied)
+
+### Session 16 — 2026-03-14
+- F015: Translation Memory — implemented via 3-agent parallel team, PR #15 open for review
+- Migration `20260314000001`: `translation_memory_entries` table — UNIQUE on `created_from_text_layer_id` (duplicate guard), indexes `tm_entries_lookup_idx (project_id, target_language, source_segment)` and `tm_entries_browse_idx (project_id, source_language, target_language)`, RLS SELECT (any project member) + INSERT (project_admin/researcher/translator), no UPDATE/DELETE (append-only V1)
+- New server action `src/lib/actions/get-translation-memory-suggestions.ts`: resolves source segment via `MT.source_layer_id → source_layer.content` (not record-level active layer); exact-match query on (project_id, target_language, source_segment); returns ≤5 results with `canonical_ref` provenance; any failure returns `[]` silently — editor cannot be blocked by TM lookup
+- Modified `src/lib/actions/save-translation-correction.ts`: step 2 select extended to include `source_layer_id` + `content`; step 8b non-blocking TM capture — resolves source transcription layer via `sourceLayer.source_layer_id`, inserts into `translation_memory_entries`; wrapped in try/catch; failure logged only, never returned as error
+- Modified `src/components/records/TranslationEditorForm.tsx`: added `mtLayerId` prop; controlled textarea via `useState(sourceContent)`; TM suggestions fetched on mount (fire-and-forget); suggestions panel above textarea when results exist; "Use this" sets textarea value; per-suggestion dismiss (×) via `dismissedIds` Set; panel hidden when empty or on fetch failure
+- Modified `src/components/records/TextLayerCard.tsx`: passes `mtLayerId={layer.id}` to `TranslationEditorForm` (only rendered when `layer.layer_type === "machine_translation"` so `layer.id` is the MT layer ID)
+- Added `TranslationMemoryEntry` type to `src/types/index.ts`
+- Addendums applied: source segment via MT chain; exact-match-only negative test in verification; full interaction path tested (dismiss, edit-after-accept, failure-tolerant); UNIQUE duplicate guard; lookup index shape matches query; canonical_ref in provenance
+- TypeScript clean, lint clean (replaced `any` with typed `RawEntry` in suggestions action)
+- plan/2026-03-14-f015-translation-memory.md written (addendums applied)
+- F015 PASSED.
 
 ### Session 14 — 2026-03-13
 - F013: Machine Translation Draft Generation — implemented via 3-agent parallel team, code reviewed (3 findings fixed), squash merged to main (PR #13)

@@ -201,6 +201,19 @@ Recommended flow:
 6. future similar passages get suggestions based on prior corrections
 7. earlier drafts may enter a later retranslation review queue
 
+Current provider decision:
+
+- default draft generation: **Google Cloud Translation**
+- planned escalation path: **Claude API**, manually triggered by the user for difficult passages
+
+Input-layer priority for machine translation:
+
+1. `corrected_transcription`
+2. `source_transcription`
+3. `source_ocr`
+
+The system should always translate from the strongest available eligible layer and record provider/source-layer provenance on every machine-generated draft.
+
 ## Protected-term / concept architecture
 
 The system should support term-level controls such as:

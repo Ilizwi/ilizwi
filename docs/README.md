@@ -53,6 +53,7 @@ Implementation guardrails.
 Execution tracking and delivery progress.
 
 - `progress.md`
+- `IMMEDIATE_POST_STAGE_ENHANCEMENTS.md`
 
 ## Maintenance Rule
 

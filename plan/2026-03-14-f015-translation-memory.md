@@ -202,3 +202,18 @@ npx eslint src/
 4. **Duplicate guard:** UNIQUE on `created_from_text_layer_id` + `ON CONFLICT DO NOTHING` in INSERT.
 5. **Index shape:** `(project_id, target_language, source_segment)` matches actual lookup.
 6. **Provenance:** `canonical_ref` displayed in suggestion panel, not raw UUID.
+
+---
+
+## Code Review Fixes (post-implementation)
+
+**P0 — Supabase join type mismatch (tsc failure):**
+The `source_records!created_from_record_id` join was typed as a single object but Supabase returns array shape, breaking `npm run typecheck`. Fixed by removing the join from the TM query entirely. Now selects `created_from_record_id` in the main query and resolves `canonical_ref` via a separate `source_records` batch lookup. No unsafe type cast.
+
+**P1 — INSERT policy cross-project provenance gap:**
+Original policy only checked project membership on `project_id`. A member of multiple projects (or anyone with a leaked UUID) could create a TM row in project A pointing at provenance from project B, leaking metadata on future reads. Fixed in migration `20260314000002`: added two `EXISTS` checks — `created_from_record_id.project_id = project_id` and `created_from_text_layer_id.record_id = created_from_record_id`.
+
+**P2 — Redundant client-supplied targetLanguage:**
+`getTranslationMemorySuggestions` previously took `targetLanguage` as a client-supplied param, even though it can be derived from `mtLayer.language` already fetched in step 1. Removed from the function signature; derived server-side. `TranslationEditorForm` updated to call with `{ mtLayerId }` only.
+
+**Final state after fixes:** `npx tsc --noEmit` clean, `npx eslint src/` clean. PR #15 squash-merged to main.

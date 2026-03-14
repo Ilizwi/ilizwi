@@ -100,6 +100,12 @@ export default async function ProjectDetailPage({
               Import from Wits &rarr;
             </Link>
           )}
+          <Link
+            href={`/projects/${id}/glossary`}
+            className="text-sm font-sans text-desk-text underline underline-offset-2"
+          >
+            Glossary {!isAdmin && <span className="text-desk-muted">(view)</span>} &rarr;
+          </Link>
         </div>
       </div>
 

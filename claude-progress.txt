@@ -4,9 +4,9 @@
 
 ## Current State
 As of: 2026-03-14
-Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014, F015, F016, F017, F018, F019
-Day 1 complete. Day 2 complete. Day 3 complete (5/5 features done). Day 4 in progress (3/4 done).
-Next: F020 — Search and Filter (P0, Day 4)
+Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014, F015, F016, F017, F018, F019, F020
+Day 1 complete. Day 2 complete. Day 3 complete (5/5 features done). Day 4 complete (4/4 done). All P0 features complete.
+Next: Day 5 features (P1) — see feature_list.json
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -34,7 +34,7 @@ Next: F020 — Search and Filter (P0, Day 4)
 - Readex permissions response pending
 
 ## Next Actions
-- F020: Search and Filter (P0, Day 4) — next unblocked feature
+- Day 5 P1 features — see feature_list.json for next unblocked feature
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -56,6 +56,17 @@ Next: F020 — Search and Filter (P0, Day 4)
 - Both layers (MT draft + corrected_translation) remain active — no supersession, no cross-type linking; both accessible on record reopen
 - Build passes clean (no warnings). All 5 PRD test steps satisfied. F014 PASSED.
 - plan/2026-03-13-f014-translation-editor-correction-workflow.md written (addendums applied)
+
+### Session 21 — 2026-03-14
+- F020: Search and Filter — implemented via 2-agent parallel team, build/typecheck/lint all pass
+- No DB migration required — all filterable fields already exist on source_records and text_layers
+- New server component `src/components/records/RecordSearchFilters.tsx`: plain GET form (no "use client"); text search input, source select (ibali/nlsa/wits/manual_readex), language select (xh/zu/st/nl/en), status select (raw/in_review/approved), date range inputs; hidden flagged input preserves flagged filter across search; Clear filters link visible when any filter active; ILIZWI design tokens only
+- Modified `src/app/(app)/projects/[id]/records/page.tsx`: extended searchParams (q, source, language, date_from, date_to, status); deterministic text search — text_layers ilike subquery (no project_id on text_layers — RLS scopes; main query .eq handles intersection), then single records query with .or(metadata fields + id.in(text_layer_ids)); structured filters applied as .eq/.gte/.lte; flagged filter preserved in same query chain (intersection semantics); result count displayed; empty state distinguishes no-records from no-match; RecordSearchFilters rendered above table
+- All addendums from plan review applied: no "use client", deterministic search path, flagged intersection in same chain, canonical-ref navigation preserved, curated language list
+- Known V1 limitations: records with only date_issued_raw won't match date range; languages outside curated list not directly filterable
+- Build, typecheck, lint all pass. All 8 acceptance criteria satisfied. F020 PASSED.
+- Day 4 complete — all P0 features done (F017–F020).
+- plan/2026-03-14-f020-search-and-filter.md written (addendums applied)
 
 ### Session 20 — 2026-03-14
 - F019: Uncertainty and Dispute Flags — implemented via 4-agent parallel team, code reviewed (2 P1 findings fixed), squash merged to main (PR #19)

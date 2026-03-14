@@ -1,36 +1,97 @@
 import { requireProjectMember } from "@/lib/auth/project-guard";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import RecordSearchFilters from "@/components/records/RecordSearchFilters";
 
 export default async function RecordsListPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ flagged?: string }>;
+  searchParams?: Promise<{
+    flagged?: string;
+    q?: string;
+    source?: string;
+    language?: string;
+    date_from?: string;
+    date_to?: string;
+    status?: string;
+  }>;
 }) {
   const { id } = await params;
   const resolvedSearch = await searchParams;
   const showFlaggedOnly = resolvedSearch?.flagged === "true";
+  const q = resolvedSearch?.q?.trim() || undefined;
+  const source = resolvedSearch?.source || undefined;
+  const language = resolvedSearch?.language || undefined;
+  const dateFrom = resolvedSearch?.date_from || undefined;
+  const dateTo = resolvedSearch?.date_to || undefined;
+  const status = resolvedSearch?.status || undefined;
+
   const { project, profile } = await requireProjectMember(id);
   const supabase = await createClient();
 
+  // Step 1: fetch text layer record IDs if full-text search is requested
+  let textLayerIds: string[] = [];
+  if (q) {
+    const { data: tlMatches } = await supabase
+      .from("text_layers")
+      .select("record_id")
+      .ilike("content", `%${q}%`);
+    textLayerIds = [
+      ...new Set((tlMatches ?? []).map((t: { record_id: string }) => t.record_id)),
+    ];
+  }
+
+  // Step 2: build base query scoped to project
   let recordsQuery = supabase
     .from("source_records")
-    .select("id, publication_title, source_archive, language, date_issued, date_issued_raw, record_status, canonical_ref, created_at")
+    .select(
+      "id, publication_title, source_archive, language, date_issued, date_issued_raw, record_status, canonical_ref, created_at"
+    )
     .eq("project_id", id)
     .order("created_at", { ascending: false });
 
+  // Step 3: apply text search — metadata OR text layer IDs
+  if (q) {
+    // Strip PostgREST .or() structural characters so the filter string stays well-formed.
+    // Commas and parentheses are expression delimiters in PostgREST filter syntax;
+    // periods are field path separators. Removing them is safe for V1 keyword search.
+    const safeQ = q.replace(/[(),.\s]+/g, " ").trim();
+    const metaFilter = `publication_title.ilike.%${safeQ}%,source_archive.ilike.%${safeQ}%,canonical_ref.ilike.%${safeQ}%`;
+    if (textLayerIds.length > 0) {
+      recordsQuery = recordsQuery.or(
+        `${metaFilter},id.in.(${textLayerIds.join(",")})`
+      );
+    } else {
+      recordsQuery = recordsQuery.or(metaFilter);
+    }
+  }
+
+  // Step 4: apply structured filters
+  if (source) recordsQuery = recordsQuery.eq("source_type", source);
+  if (language) recordsQuery = recordsQuery.eq("language", language);
+  if (status) recordsQuery = recordsQuery.eq("record_status", status);
+  if (dateFrom) recordsQuery = recordsQuery.gte("date_issued", dateFrom);
+  if (dateTo) recordsQuery = recordsQuery.lte("date_issued", dateTo);
+
+  // Step 5: apply flagged filter (same query chain — intersection)
   if (showFlaggedOnly) {
     const { data: flaggedIds } = await supabase
       .from("record_flags")
       .select("record_id")
       .eq("project_id", id);
 
-    const ids = [...new Set((flaggedIds ?? []).map((f: { record_id: string }) => f.record_id))];
+    const ids = [
+      ...new Set(
+        (flaggedIds ?? []).map((f: { record_id: string }) => f.record_id)
+      ),
+    ];
 
     if (ids.length === 0) {
-      recordsQuery = recordsQuery.in("id", ["00000000-0000-0000-0000-000000000000"]);
+      recordsQuery = recordsQuery.in("id", [
+        "00000000-0000-0000-0000-000000000000",
+      ]);
     } else {
       recordsQuery = recordsQuery.in("id", ids);
     }
@@ -53,8 +114,8 @@ export default async function RecordsListPage({
       membership?.role === "researcher";
   }
 
-  const statusBadge = (status: string) => {
-    switch (status) {
+  const statusBadge = (s: string) => {
+    switch (s) {
       case "raw":
         return "bg-vault-bg/10 text-desk-muted";
       case "in_review":
@@ -65,6 +126,22 @@ export default async function RecordsListPage({
         return "bg-vault-bg/10 text-desk-muted";
     }
   };
+
+  const recordCount = records?.length ?? 0;
+
+  // Build the flagged toggle URL preserving all active filters
+  const flaggedToggleHref = (() => {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (source) params.set("source", source);
+    if (language) params.set("language", language);
+    if (dateFrom) params.set("date_from", dateFrom);
+    if (dateTo) params.set("date_to", dateTo);
+    if (status) params.set("status", status);
+    if (!showFlaggedOnly) params.set("flagged", "true");
+    const qs = params.toString();
+    return `/projects/${id}/records${qs ? `?${qs}` : ""}`;
+  })();
 
   return (
     <div className="p-8">
@@ -79,11 +156,7 @@ export default async function RecordsListPage({
         </div>
         <div className="flex items-center gap-3">
           <Link
-            href={
-              showFlaggedOnly
-                ? `/projects/${id}/records`
-                : `/projects/${id}/records?flagged=true`
-            }
+            href={flaggedToggleHref}
             className={`px-4 py-2 text-sm font-sans rounded-[2px] border transition-colors ${
               showFlaggedOnly
                 ? "border-amber-400 bg-amber-50 text-amber-700"
@@ -103,10 +176,25 @@ export default async function RecordsListPage({
         </div>
       </div>
 
-      {(!records || records.length === 0) ? (
+      <RecordSearchFilters
+        projectId={id}
+        q={q}
+        source={source}
+        language={language}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        status={status}
+        flagged={resolvedSearch?.flagged}
+      />
+
+      <p className="text-xs font-sans text-desk-muted mb-4">
+        {recordCount} record{recordCount !== 1 ? "s" : ""} found
+      </p>
+
+      {recordCount === 0 ? (
         <div className="text-center py-12">
-          <p className="text-desk-muted text-sm font-sans">No records yet.</p>
-          {canUpload && (
+          <p className="text-desk-muted text-sm font-sans">No records found.</p>
+          {canUpload && !q && !source && !language && !dateFrom && !dateTo && !status && !showFlaggedOnly && (
             <Link
               href={`/projects/${id}/upload`}
               className="text-sm font-sans text-desk-text underline underline-offset-2 mt-2 inline-block"
@@ -144,7 +232,7 @@ export default async function RecordsListPage({
               </tr>
             </thead>
             <tbody>
-              {records.map((r) => (
+              {records!.map((r) => (
                 <tr
                   key={r.id}
                   className="border-b border-desk-border last:border-b-0"
@@ -163,11 +251,9 @@ export default async function RecordsListPage({
                       {r.canonical_ref ?? "—"}
                     </Link>
                   </td>
+                  <td className="px-4 py-3 text-desk-muted">{r.language}</td>
                   <td className="px-4 py-3 text-desk-muted">
-                    {r.language}
-                  </td>
-                  <td className="px-4 py-3 text-desk-muted">
-                    {r.date_issued ?? r.date_issued_raw ?? "\u2014"}
+                    {r.date_issued ?? r.date_issued_raw ?? "—"}
                   </td>
                   <td className="px-4 py-3">
                     <span

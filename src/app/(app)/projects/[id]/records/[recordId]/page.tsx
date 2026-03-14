@@ -194,6 +194,11 @@ export default async function RecordDetailPage({
   // Do NOT reuse canAddLayer here — researchers can add layers but not edit others' annotations.
   let canEditAllAnnotations = profile.global_role === "super_admin";
   let canCorrectTranslation = false;
+  // Flags are membership-only — no super_admin bypass (matches record-flags.ts actions).
+  // A super_admin who is not a project member cannot mutate flags; initialising from
+  // super_admin would expose Edit/Remove affordances that always fail on submit.
+  let canManageFlags = false;
+  let canEditAllFlags = false;
   if (!canAddLayer || !canCorrectTranslation) {
     const { data: membership } = await supabase
       .from("project_memberships")
@@ -210,6 +215,9 @@ export default async function RecordDetailPage({
       membership?.role === "project_admin" ||
       membership?.role === "researcher" ||
       membership?.role === "translator";
+    // Any project member can add/remove their own flags; project_admin can edit any.
+    canManageFlags = !!membership;
+    canEditAllFlags = membership?.role === "project_admin";
   }
 
   const statusBadge = (status: string) => {
@@ -486,7 +494,8 @@ export default async function RecordDetailPage({
           projectId={id}
           recordId={recordId}
           currentUserId={profile.id}
-          canEditAll={canEditAllAnnotations}
+          canManageFlags={canManageFlags}
+          canEditAll={canEditAllFlags}
           editFlagId={resolvedSearch?.editFlag}
           addAction={handleAddFlag}
           removeAction={handleRemoveFlag}

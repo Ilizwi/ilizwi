@@ -30,6 +30,9 @@ type Props = {
   projectId: string;
   recordId: string;
   currentUserId: string;
+  /** True if caller is any project member. Controls add form and own-flag remove/edit. */
+  canManageFlags: boolean;
+  /** True if caller is a project_admin. Allows edit/remove of any flag. No super_admin bypass. */
   canEditAll: boolean;
   editFlagId?: string;
   addAction: (formData: FormData) => Promise<void>;
@@ -46,6 +49,7 @@ export default function RecordFlagsPanel({
   projectId,
   recordId,
   currentUserId,
+  canManageFlags,
   canEditAll,
   editFlagId,
   addAction,
@@ -67,7 +71,8 @@ export default function RecordFlagsPanel({
           {flags.map((flag) => {
             const isEditingNote = editFlagId === flag.id;
             const canRemove =
-              canEditAll || flag.created_by === currentUserId;
+              canManageFlags &&
+              (canEditAll || flag.created_by === currentUserId);
             const linkedLayer = flag.text_layer_id
               ? layerMap.get(flag.text_layer_id)
               : null;
@@ -181,8 +186,8 @@ export default function RecordFlagsPanel({
         </div>
       )}
 
-      {/* Add flag form — available to all project members */}
-      <div className="border border-desk-border rounded-[2px] p-4 bg-white">
+      {/* Add flag form — only for project members */}
+      {canManageFlags && <div className="border border-desk-border rounded-[2px] p-4 bg-white">
         <h3 className="font-sans text-xs uppercase tracking-widest text-desk-muted mb-3">
           Add Flag
         </h3>
@@ -247,7 +252,7 @@ export default function RecordFlagsPanel({
             Add Flag
           </button>
         </form>
-      </div>
+      </div>}
     </div>
   );
 }

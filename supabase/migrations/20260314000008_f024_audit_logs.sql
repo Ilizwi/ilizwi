@@ -26,6 +26,21 @@ CREATE POLICY audit_logs_select ON audit_logs
     OR is_super_admin()
   );
 
--- INSERT: only the actor themselves (server actions run as the authenticated user)
+-- INSERT: actor must be a project member, record_id (if set) must belong to the same project
 CREATE POLICY audit_logs_insert ON audit_logs
-  FOR INSERT WITH CHECK (actor_id = auth.uid());
+  FOR INSERT WITH CHECK (
+    actor_id = auth.uid()
+    AND EXISTS (
+      SELECT 1 FROM project_memberships pm
+      WHERE pm.project_id = audit_logs.project_id
+        AND pm.user_id = auth.uid()
+    )
+    AND (
+      audit_logs.record_id IS NULL
+      OR EXISTS (
+        SELECT 1 FROM source_records sr
+        WHERE sr.id = audit_logs.record_id
+          AND sr.project_id = audit_logs.project_id
+      )
+    )
+  );

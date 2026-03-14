@@ -3,6 +3,32 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import type { AuditLog } from "@/types";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function formatMetadata(
+  actionType: string,
+  metadata: Record<string, unknown> | null
+): string | null {
+  if (!metadata) return null;
+  switch (actionType) {
+    case "update_layer_status":
+      return metadata.newStatus ? `→ ${metadata.newStatus}` : null;
+    case "add_text_layer":
+    case "extract_text":
+      return metadata.layerType ? `(${metadata.layerType})` : null;
+    case "add_record_flag":
+    case "update_record_flag":
+    case "remove_record_flag":
+      return metadata.flagType ? `— ${metadata.flagType}` : null;
+    case "generate_translation":
+      return metadata.targetLanguage ? `→ ${metadata.targetLanguage}` : null;
+    case "upload_record":
+      return metadata.sourceType ? `(${metadata.sourceType})` : null;
+    default:
+      return null;
+  }
+}
+
 const ACTION_LABELS: Record<string, string> = {
   upload_record: "Uploaded record",
   import_ibali: "Imported from Ibali",
@@ -29,7 +55,8 @@ export default async function AuditPage({
 }) {
   const { id } = await params;
   const resolvedSearch = await searchParams;
-  const recordFilter = resolvedSearch?.record ?? null;
+  const raw = resolvedSearch?.record ?? null;
+  const recordFilter = raw && UUID_RE.test(raw) ? raw : null;
 
   const { project, profile } = await requireProjectMember(id);
   const supabase = await createClient();
@@ -67,7 +94,10 @@ export default async function AuditPage({
     query = query.eq("record_id", recordFilter);
   }
 
-  const { data: logs } = await query;
+  const { data: logs, error: logsError } = await query;
+  if (logsError) {
+    console.error("[audit] query failed", logsError);
+  }
   const typedLogs = (logs ?? []) as AuditLog[];
 
   let filterRecord: { id: string; canonical_ref: string } | null = null;
@@ -140,6 +170,7 @@ export default async function AuditPage({
                 const rec = Array.isArray(log.source_records)
                   ? log.source_records[0]
                   : log.source_records;
+                const meta = formatMetadata(log.action_type, log.metadata);
                 return (
                   <tr
                     key={log.id}
@@ -153,6 +184,9 @@ export default async function AuditPage({
                     </td>
                     <td className="px-4 py-3 text-desk-text">
                       {ACTION_LABELS[log.action_type] ?? log.action_type}
+                      {meta && (
+                        <span className="text-desk-muted ml-1 text-xs">{meta}</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       {log.record_id && rec ? (

@@ -119,8 +119,12 @@
 - Modified `src/types/index.ts`: added `Annotation` interface with `profiles?` join shape
 - Modified `src/app/(app)/projects/[id]/records/[recordId]/page.tsx`: searchParams added; annotations fetched with profiles join (desc order); server action wrappers `handleAddAnnotation`/`handleUpdateAnnotation` handle redirects; AnnotationsPanel rendered after Text Layers section
 - Addendums applied: server-derived project_id; text_layer_id cross-record validation; actions return error, page handles redirects; `npm run` commands in plan; CRU scope (no delete)
+- Migration `20260314000006` (review hardening): INSERT policy tightened — `created_by = auth.uid()`, `project_id` ↔ `record_id.project_id` consistency, `text_layer_id` ↔ `record_id` consistency at DB layer; `profiles_select_project_peers` SELECT policy (project peers only)
+- `canEditAllAnnotations` flag introduced separately from `canAddLayer` — project_admin/super_admin only; researchers excluded from edit-all path
+- Review P0 fix: DB-layer authorship + referential invariants in INSERT policy
+- Review P1 fix: `canEditAllAnnotations` flag corrected; `profiles_select_project_peers` policy enables author attribution
 - Build, typecheck, lint all pass. All 5 PRD test steps satisfied. F018 PASSED.
-- plan/2026-03-14-f018-annotation-notes.md written (addendums applied)
+- plan/2026-03-14-f018-annotation-notes.md updated with review findings and fixes
 
 ### Session 15 — 2026-03-13
 - F014: Translation Editor and Correction Workflow — implemented via 3-agent parallel team, code reviewed (2 findings fixed), squash merged to main (PR #14)

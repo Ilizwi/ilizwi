@@ -132,6 +132,26 @@ Fetch annotations with profiles join. Pass `editAnnotation` search param. Render
 
 ---
 
+## Review Findings and Fixes (Applied 2026-03-14)
+
+**[P0] INSERT policy too weak** — Fixed in migration `20260314000006`:
+- Added `created_by = auth.uid()` (prevents authorship forgery)
+- Added `project_id` ↔ `source_records.project_id` consistency check (prevents cross-project linkage via forged project_id)
+- Added `text_layer_id` ↔ `record_id` consistency check at DB layer (not only in server action)
+
+**[P1] Wrong `canEditAll` flag** — Fixed in `page.tsx`:
+- Introduced separate `canEditAllAnnotations` flag: `super_admin OR project_admin` only
+- Researchers can add layers (`canAddLayer`) but cannot edit others' annotations (`canEditAllAnnotations`)
+- `canAddLayer` was erroneously reused — now corrected
+
+**[P1] Author attribution blocked by profiles RLS** — Fixed in migration `20260314000006`:
+- Added `profiles_select_project_peers` SELECT policy: project members can read display_name/email of fellow project members
+- Scope is minimal — only shared-project peers exposed; broader profile privacy preserved
+
+**Migrations:** `20260314000005` (initial), `20260314000006` (hardening/review fixes)
+
+---
+
 ## Acceptance Criteria
 
 1. Open a record → add an annotation with a type and content → save → annotation appears in list with author name

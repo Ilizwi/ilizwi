@@ -57,14 +57,16 @@ Next: F019 — Uncertainty and Dispute Flags (P1, Day 4)
 - plan/2026-03-13-f014-translation-editor-correction-workflow.md written (addendums applied)
 
 ### Session 19 — 2026-03-14
-- F018: Annotation and Notes — implemented via 3-agent parallel team, code reviewed, PR #18 open
-- Migration `20260314000005`: annotation_type_enum, annotations table, RLS (SELECT/INSERT member-or-admin, UPDATE author-or-admin)
-- addAnnotation action: derives project_id from record_id server-side; validates text_layer_id belongs to same record; member-any-role insert; returns { error }
-- updateAnnotation action: derives record/project from annotation_id server-side; author OR project_admin OR super_admin gate; content-only update
-- AnnotationsPanel: server component; scholarly marginalia style; type badges; author attribution; linked layer label; edit via ?editAnnotation=<id>; add form always visible to members
-- Record detail page: searchParams wired; annotations fetched with profiles join; server action wrappers handle redirects
-- Addendums applied: server-derived project_id, text_layer_id cross-record check, action-returns-error pattern, npm run commands
-- Build, typecheck, lint all pass. F018 PASSED.
+- F018: Annotation and Notes — implemented via 3-agent parallel team, code reviewed (3 findings fixed), squash merged to main (PR #18)
+- Migration `20260314000005`: annotation_type_enum, annotations table, RLS SELECT (member OR super_admin), INSERT (any member OR super_admin), UPDATE (author OR project_admin OR super_admin); indexes on record_id + project_id; updated_at trigger
+- Migration `20260314000006` (review hardening): INSERT policy tightened — added created_by = auth.uid(), project_id ↔ source_records.project_id consistency, text_layer_id ↔ record_id consistency at DB layer; added profiles_select_project_peers SELECT policy (project peers only — minimum scope for author attribution)
+- New server actions `src/lib/actions/annotations.ts`: addAnnotation derives project_id server-side from record_id; validates text_layer_id belongs to same record_id; updateAnnotation derives context from annotation_id only; both return { error }, page wrappers handle redirects
+- New component `src/components/records/AnnotationsPanel.tsx`: server component; border-l-2 border-historic marginalia style; 5 annotation type badges; display_name/email author attribution; linked layer label; edit link gated on authorship or canEditAll; add form visible to all project members
+- Record detail page: searchParams wired; annotations fetched with profiles(display_name, email) join; canEditAllAnnotations derived separately (project_admin OR super_admin — NOT researcher); AnnotationsPanel rendered after Text Layers
+- Review P0 fix: INSERT policy DB-layer enforcement of authorship + referential consistency
+- Review P1 fix (canEditAll): canEditAllAnnotations flag — researchers excluded from edit-all path
+- Review P1 fix (profiles): profiles_select_project_peers policy — author attribution now resolves correctly for annotations by other users
+- Build, typecheck, lint all pass. All 5 PRD test steps satisfied. F018 PASSED.
 
 ### Session 18 — 2026-03-14
 - F017: Scholarly Side-by-Side Reader — implemented via 2-agent parallel team, code reviewed (1 P1 fix), squash merged to main (PR #17)

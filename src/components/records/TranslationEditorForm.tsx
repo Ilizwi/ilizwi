@@ -29,13 +29,10 @@ export default function TranslationEditorForm({
   const [suggestions, setSuggestions] = useState<TranslationMemorySuggestion[]>([]);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
-  // Fetch TM suggestions on mount — failure is silently swallowed
+  // Fetch TM suggestions on mount — target language derived server-side from MT layer
   useEffect(() => {
-    getTranslationMemorySuggestions({
-      mtLayerId,
-      targetLanguage: sourceLanguage,
-    }).then(setSuggestions).catch(() => {});
-  }, [mtLayerId, sourceLanguage]);
+    getTranslationMemorySuggestions({ mtLayerId }).then(setSuggestions).catch(() => {});
+  }, [mtLayerId]);
 
   useEffect(() => {
     if (submitted.current && state.error === null) {

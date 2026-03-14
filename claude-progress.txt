@@ -4,9 +4,9 @@
 
 ## Current State
 As of: 2026-03-14
-Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014, F015, F016, F017, F018
-Day 1 complete. Day 2 complete. Day 3 complete (5/5 features done). Day 4 in progress (2/4 done).
-Next: F019 — Uncertainty and Dispute Flags (P1, Day 4)
+Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014, F015, F016, F017, F018, F019
+Day 1 complete. Day 2 complete. Day 3 complete (5/5 features done). Day 4 in progress (3/4 done).
+Next: F020 — Search and Filter (P0, Day 4)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -27,13 +27,14 @@ Next: F019 — Uncertainty and Dispute Flags (P1, Day 4)
 - F016: Protected-Term and Glossary Rules — PASSED (2026-03-14)
 - F017: Scholarly Side-by-Side Reader — PASSED (2026-03-14)
 - F018: Annotation and Notes — PASSED (2026-03-14)
+- F019: Uncertainty and Dispute Flags — PASSED (2026-03-14)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
 ## Next Actions
-- F018: Annotation Layer (P0, Day 4) — next unblocked P0
+- F020: Search and Filter (P0, Day 4) — next unblocked feature
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -55,6 +56,19 @@ Next: F019 — Uncertainty and Dispute Flags (P1, Day 4)
 - Both layers (MT draft + corrected_translation) remain active — no supersession, no cross-type linking; both accessible on record reopen
 - Build passes clean (no warnings). All 5 PRD test steps satisfied. F014 PASSED.
 - plan/2026-03-13-f014-translation-editor-correction-workflow.md written (addendums applied)
+
+### Session 20 — 2026-03-14
+- F019: Uncertainty and Dispute Flags — implemented via 4-agent parallel team, code reviewed (2 P1 findings fixed), squash merged to main (PR #19)
+- Migration `20260314000007`: `flag_type_enum` (illegible, uncertain, disputed, needs_expert_review); `record_flags` table (project_id, record_id, text_layer_id nullable, flag_type, note nullable, created_by); two partial unique indexes (record-level and layer-level uniqueness); two standard indexes (record_id, project_id); `update_updated_at()` trigger reused; RLS SELECT (member OR super_admin), INSERT/UPDATE/DELETE membership-only — no super_admin bypass (matches action boundary). INSERT policy enforces created_by = auth.uid(), project_id ↔ source_records.project_id consistency, text_layer_id ↔ record_id consistency at DB layer.
+- New server actions `src/lib/actions/record-flags.ts`: `addRecordFlag` — derives project_id server-side, validates text_layer_id belongs to same record, membership-only (no super_admin bypass), unique constraint violation surfaced as clear error; `updateRecordFlag` — updates note only (flag_type is immutable; change = delete + re-add); `removeRecordFlag` — DELETE with author-or-project_admin check; revalidates both record and records-list paths.
+- New component `src/components/records/RecordFlagsPanel.tsx`: server component; amber left border (border-amber-400) distinct from annotation style; 4 flag type badges (illegible muted, uncertain amber, disputed red, needs_expert_review blue); optional note display; inline note editing via `?editFlag=<id>` search param; remove form (separate from edit); add form with flag_type select + target selector (record-level OR text layer); all mutation affordances gated on `canManageFlags`.
+- Modified `src/types/index.ts`: added `RecordFlag` interface with `profiles?` join shape.
+- Modified `src/app/(app)/projects/[id]/records/[recordId]/page.tsx`: added `canManageFlags` (any project member) and `canEditAllFlags` (project_admin only) — both derived membership-only with no super_admin bypass; flags fetched with profiles join; three server action wrappers; RecordFlagsPanel rendered after AnnotationsPanel.
+- Modified `src/app/(app)/projects/[id]/records/page.tsx`: accepts `?flagged=true` query param; two-step server-side filter (fetch flagged record_ids from record_flags for project, then .in() filter on records query); "Show Flagged / Flagged Only" toggle button beside Upload Record.
+- Review P1 fix: `canManageFlags`/`canEditAllFlags` derived membership-only — non-member super_admin cannot reach mutation affordances; UI/action boundary now consistent.
+- Review P1 fix: add form and edit/remove controls gated on `canManageFlags` in panel — non-member super_admin sees flags read-only.
+- Build, typecheck, lint all pass. All 5 PRD test steps satisfied. F019 PASSED.
+- plan/2026-03-14-f019-uncertainty-dispute-flags.md written.
 
 ### Session 19 — 2026-03-14
 - F018: Annotation and Notes — implemented via 3-agent parallel team, code reviewed (3 findings fixed), squash merged to main (PR #18)

@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 18 |
-| Remaining | 6 |
+| Completed | 19 |
+| Remaining | 5 |
 | Current Day | 4 |
 
 ## Day 1: Foundation
@@ -56,7 +56,7 @@
 
 - [x] F017: Scholarly Side-by-Side Reader — PASSED
 - [x] F018: Annotation and Notes — PASSED
-- [ ] F019: Uncertainty and Dispute Flags
+- [x] F019: Uncertainty and Dispute Flags — PASSED
 - [ ] F020: Search and Filter
 
 **Deliverable:** Researchers can read, annotate, and search records in one workspace
@@ -110,6 +110,14 @@
 - Records list shows canonical_ref in monospace column
 - Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
 - All 5 PRD test steps satisfied. F004 PASSED.
+
+### Session 20 — 2026-03-14
+- F019: Uncertainty and Dispute Flags — implemented via 4-agent parallel team, code reviewed (2 P1 findings fixed), squash merged to main (PR #19)
+- Migration `20260314000007`: `flag_type_enum`, `record_flags` table, two partial unique indexes, updated_at trigger, RLS with INSERT/UPDATE/DELETE membership-only (no super_admin bypass)
+- New: `record-flags.ts` server actions (add/update note/remove); `RecordFlagsPanel.tsx` server component; `RecordFlag` interface in types
+- Modified: record detail page (canManageFlags/canEditAllFlags derived membership-only; Flags section rendered after Annotations); records list page (?flagged=true filter toggle)
+- PR #19 review fixed: flag UI/action permission mismatch — non-member super_admin now sees flags read-only with no mutation affordances
+- All 5 PRD test steps satisfied. F019 PASSED.
 
 ### Session 19 — 2026-03-14
 - F018: Annotation and Notes — implemented via 3-agent parallel team (migration + types, server actions, component), squash merged to main (PR #18)

@@ -286,7 +286,7 @@
         "Filter or search for flagged records and confirm the flagged record appears.",
         "Update or clear the flag and confirm the change is reflected."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F020",

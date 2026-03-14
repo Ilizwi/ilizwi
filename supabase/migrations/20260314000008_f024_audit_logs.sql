@@ -26,14 +26,17 @@ CREATE POLICY audit_logs_select ON audit_logs
     OR is_super_admin()
   );
 
--- INSERT: actor must be a project member, record_id (if set) must belong to the same project
+-- INSERT: actor must be a project member OR super_admin; record_id (if set) must belong to the same project
 CREATE POLICY audit_logs_insert ON audit_logs
   FOR INSERT WITH CHECK (
     actor_id = auth.uid()
-    AND EXISTS (
-      SELECT 1 FROM project_memberships pm
-      WHERE pm.project_id = audit_logs.project_id
-        AND pm.user_id = auth.uid()
+    AND (
+      EXISTS (
+        SELECT 1 FROM project_memberships pm
+        WHERE pm.project_id = audit_logs.project_id
+          AND pm.user_id = auth.uid()
+      )
+      OR is_super_admin()
     )
     AND (
       audit_logs.record_id IS NULL

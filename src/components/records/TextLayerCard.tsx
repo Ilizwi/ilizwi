@@ -117,6 +117,7 @@ export default function TextLayerCard({
               sourceContent={layer.content}
               sourceLanguage={layer.language}
               sourceLayerId={layer.id}
+              mtLayerId={layer.id}
               onClose={() => setShowTranslationForm(false)}
             />
           ) : showTranscribeForm ? (

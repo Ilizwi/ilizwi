@@ -22,7 +22,7 @@ export async function saveTranslationCorrection(
   // 2. Fetch source layer — must be a machine_translation
   const { data: sourceLayer } = await supabase
     .from("text_layers")
-    .select("id, record_id, layer_type, language")
+    .select("id, record_id, layer_type, language, source_layer_id, content")
     .eq("id", sourceLayerId)
     .single();
 
@@ -101,6 +101,46 @@ export async function saveTranslationCorrection(
     record_id: recordId,
     project_id: projectId,
   });
+
+  // 8b. Translation Memory capture (non-blocking)
+  try {
+    // Resolve source segment from MT layer's source_layer_id chain
+    if (sourceLayer.source_layer_id) {
+      const { data: sourceSegmentLayer } = await supabase
+        .from("text_layers")
+        .select("content, language")
+        .eq("id", sourceLayer.source_layer_id)
+        .single();
+
+      if (sourceSegmentLayer) {
+        const { error: tmError } = await supabase
+          .from("translation_memory_entries")
+          .insert({
+            project_id: projectId,
+            source_language: sourceSegmentLayer.language ?? sourceLayer.language ?? "unknown",
+            target_language: language ?? "unknown",
+            source_segment: sourceSegmentLayer.content,
+            machine_translation: sourceLayer.content ?? null,
+            corrected_translation: content,
+            created_from_record_id: recordId,
+            created_from_text_layer_id: newLayer.id,
+            created_by: profile.id,
+          });
+
+        if (tmError) {
+          // Only log — do NOT fail the correction save
+          console.warn("[tm] Failed to insert translation memory entry:", tmError.message);
+        } else {
+          console.log("[audit] tm_entry_created", {
+            from_layer_id: newLayer.id,
+            project_id: projectId,
+          });
+        }
+      }
+    }
+  } catch (tmCaptureError) {
+    console.warn("[tm] Unexpected error during TM capture:", tmCaptureError);
+  }
 
   // 9. Revalidate record page
   revalidatePath(`/projects/${projectId}/records/${recordId}`);

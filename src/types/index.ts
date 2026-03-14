@@ -147,3 +147,19 @@ export type TextLayer = {
   source_layer_id: string | null;
   translation_provider: string | null;
 };
+
+export type TranslationMemoryEntry = {
+  id: string;
+  project_id: string;
+  source_language: string;
+  target_language: string;
+  source_segment: string;
+  machine_translation: string | null;
+  corrected_translation: string;
+  created_from_record_id: string;
+  created_from_text_layer_id: string;
+  created_by: string;
+  created_at: string;
+  // Joined from source_records for display
+  canonical_ref?: string;
+};

@@ -4,9 +4,9 @@
 
 ## Current State
 As of: 2026-03-14
-Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014, F015, F016, F017, F018, F019, F020, F021
-Day 1 complete. Day 2 complete. Day 3 complete (5/5 features done). Day 4 complete (4/4 done). Day 5 in progress (1/4 done). All P0 features complete.
-Next: F022 Corpus Trend View (Day 5, P1)
+Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014, F015, F016, F017, F018, F019, F020, F021, F022
+Day 1 complete. Day 2 complete. Day 3 complete (5/5 features done). Day 4 complete (4/4 done). Day 5 in progress (2/4 done). All P0 features complete.
+Next: F024 Admin Record Audit and Activity Trace (Day 5, P1) — F023 is P2, do after remaining P1s
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -30,13 +30,15 @@ Next: F022 Corpus Trend View (Day 5, P1)
 - F019: Uncertainty and Dispute Flags — PASSED (2026-03-14)
 - F020: Search and Filter — PASSED (2026-03-14)
 - F021: Citation Packet Export — PASSED (2026-03-14)
+- F022: Corpus Trend View — PASSED (2026-03-14)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
 ## Next Actions
-- F022 Corpus Trend View (Day 5, P1) — next unblocked feature
+- F024 Admin Record Audit and Activity Trace (Day 5, P1) — next unblocked feature
+- F023 Related Text Suggestions (Day 5, P2) — after F024
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -58,6 +60,20 @@ Next: F022 Corpus Trend View (Day 5, P1)
 - Both layers (MT draft + corrected_translation) remain active — no supersession, no cross-type linking; both accessible on record reopen
 - Build passes clean (no warnings). All 5 PRD test steps satisfied. F014 PASSED.
 - plan/2026-03-13-f014-translation-editor-correction-workflow.md written (addendums applied)
+
+### Session 23 — 2026-03-14
+- F022: Corpus Trend View — implemented via 2-agent parallel team (Agent A: utility + component; Agent B: page + dashboard), 2 P1 review findings fixed, squash merged to main (PR #22)
+- Plan updated with 4 reviewer addendums before coding: no server action surface, F020 search escaping reused verbatim, drill-down mappings defined up front, AC4 corrected to 2-step drill-down
+- New: `src/lib/trends/corpus-trends.ts` — plain async utility; two-phase search from F020 copied exactly; project-scoped; aggregates byYear/byPublication/byLanguage/bySource; `recordsUrl()` helper threads active source/language into all drill-down hrefs
+- New: `src/components/records/TrendBarChart.tsx` — horizontal CSS bar chart; ILIZWI tokens; bar width = count/max * 100%; each bar is a Link; up to 15 items; empty state
+- New: `src/app/(app)/projects/[id]/trends/page.tsx` — server component; URL-driven filters (q/source/language); GET form; 2×2 chart grid; all 4 empty/browse states
+- Modified: `src/app/(app)/projects/[id]/page.tsx` — "Corpus Trends →" link added
+- P1 fix: language options corrected to ISO codes (xh/zu/st/nl/en); were full names, didn't match stored data
+- P1 fix: `recordsUrl()` helper preserves active source/language through all bucket hrefs
+- V1 known limitation: byPublication bars use `q=<title>` (ILIKE, fuzzy) — records page has no exact publication_title filter param
+- V1 known limitation: bars navigate to filtered records list, not directly to record detail (2-step, by design)
+- Build, typecheck, lint all pass. All 5 PRD test steps satisfied. F022 PASSED.
+- plan/2026-03-14-f022-corpus-trend-view.md written (addendums incorporated)
 
 ### Session 22 — 2026-03-14
 - F021: Citation Packet Export — implemented, all addendums applied, squash merged to main (PR #21)

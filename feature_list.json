@@ -331,7 +331,7 @@
         "Confirm the trend view updates accordingly.",
         "Open one underlying record from the trend view and confirm navigation works."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F023",

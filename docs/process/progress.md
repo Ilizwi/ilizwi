@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 21 |
-| Remaining | 3 |
+| Completed | 22 |
+| Remaining | 2 |
 | Current Day | 5 |
 
 ## Day 1: Foundation
@@ -64,10 +64,10 @@
 ---
 
 ## Day 5: Reporting, Discovery, and Polish
-**Status:** In progress (1/4 done)
+**Status:** In progress (2/4 done)
 
 - [x] F021: Citation Packet Export — PASSED
-- [ ] F022: Corpus Trend View
+- [x] F022: Corpus Trend View — PASSED
 - [ ] F023: Related Text Suggestions
 - [ ] F024: Admin Record Audit and Activity Trace
 
@@ -110,6 +110,19 @@
 - Records list shows canonical_ref in monospace column
 - Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
 - All 5 PRD test steps satisfied. F004 PASSED.
+
+### Session 23 — 2026-03-14
+- F022: Corpus Trend View — implemented via 2-agent parallel team, 2 P1 review findings fixed, squash merged to main (PR #22)
+- Plan updated with 4 reviewer addendums before coding began: no server action (plain utility), F020 search escaping reused verbatim, drill-down mappings defined up front, AC4 corrected
+- New: `src/lib/trends/corpus-trends.ts` — plain async utility (no `"use server"`); two-phase text search copied from F020 exactly; always project-scoped; aggregates into byYear/byPublication/byLanguage/bySource TrendBucket arrays; `recordsUrl()` helper threads active source/language through all drill-down hrefs
+- New: `src/components/records/TrendBarChart.tsx` — horizontal CSS bar chart panel; ILIZWI desk tokens; bar width = `count/max * 100%`; each bar is a `<Link>`; up to 15 items; empty state
+- New: `src/app/(app)/projects/[id]/trends/page.tsx` — server component; URL-driven filters (q/source/language); GET form; 2×2 chart grid (byYear, byPublication, byLanguage, bySource); 4 empty/browse states handled
+- Modified: `src/app/(app)/projects/[id]/page.tsx` — "Corpus Trends →" nav link added after "View records →"
+- P1 fix (review): language select options corrected from full names to ISO codes (xh/zu/st/nl/en) matching RecordSearchFilters and stored data
+- P1 fix (review): `recordsUrl()` helper added to corpus-trends.ts; all 4 bucket hrefs now preserve active source/language filters from trends URL
+- Known limitation (acknowledged, V1): byPublication bars use `q=<title>` (ILIKE), not exact publication_title filter — records page has no exact pub filter param
+- Known limitation (acknowledged, V1): trend bars navigate to filtered /records list, not directly to record detail; 2-step drill-down by design
+- Build, typecheck, lint all pass. All 5 PRD test steps satisfied. F022 PASSED.
 
 ### Session 22 — 2026-03-14
 - F021: Citation Packet Export — implemented, all addendums applied, squash merged to main (PR #21)

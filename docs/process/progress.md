@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 17 |
-| Remaining | 7 |
+| Completed | 18 |
+| Remaining | 6 |
 | Current Day | 4 |
 
 ## Day 1: Foundation
@@ -55,7 +55,7 @@
 **Status:** In Progress
 
 - [x] F017: Scholarly Side-by-Side Reader — PASSED
-- [ ] F018: Annotation and Notes
+- [x] F018: Annotation and Notes — PASSED
 - [ ] F019: Uncertainty and Dispute Flags
 - [ ] F020: Search and Filter
 
@@ -110,6 +110,17 @@
 - Records list shows canonical_ref in monospace column
 - Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
 - All 5 PRD test steps satisfied. F004 PASSED.
+
+### Session 19 — 2026-03-14
+- F018: Annotation and Notes — implemented via 3-agent parallel team (migration + types, server actions, component), squash merged to main (PR #18)
+- Migration `20260314000005`: `annotation_type_enum` ENUM, `annotations` table with project_id/record_id/text_layer_id/annotation_type/content/created_by; indexes on record_id and project_id; updated_at trigger (reuses existing `update_updated_at()` function); RLS SELECT (member OR super_admin), INSERT (any member OR super_admin), UPDATE (author OR project_admin OR super_admin)
+- New server actions `src/lib/actions/annotations.ts`: `addAnnotation` derives project_id server-side from record_id (no client trust); validates text_layer_id belongs to same record_id; member-only insert guard; `updateAnnotation` derives project_id/record_id from annotation_id (no client trust); author-OR-project_admin-OR-super_admin update guard; both return `{ error: string | null }`, callers handle redirects
+- New component `src/components/records/AnnotationsPanel.tsx`: server component; scholarly marginalia style (border-l-2 border-historic); annotation type badges (5 types, muted/coloured); author display_name or email; linked layer label; edit link visible to author OR canEditAll; inline edit form via `?editAnnotation=<id>` search param; add form always visible to project members
+- Modified `src/types/index.ts`: added `Annotation` interface with `profiles?` join shape
+- Modified `src/app/(app)/projects/[id]/records/[recordId]/page.tsx`: searchParams added; annotations fetched with profiles join (desc order); server action wrappers `handleAddAnnotation`/`handleUpdateAnnotation` handle redirects; AnnotationsPanel rendered after Text Layers section
+- Addendums applied: server-derived project_id; text_layer_id cross-record validation; actions return error, page handles redirects; `npm run` commands in plan; CRU scope (no delete)
+- Build, typecheck, lint all pass. All 5 PRD test steps satisfied. F018 PASSED.
+- plan/2026-03-14-f018-annotation-notes.md written (addendums applied)
 
 ### Session 15 — 2026-03-13
 - F014: Translation Editor and Correction Workflow — implemented via 3-agent parallel team, code reviewed (2 findings fixed), squash merged to main (PR #14)

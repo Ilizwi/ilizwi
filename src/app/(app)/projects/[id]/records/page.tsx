@@ -4,18 +4,39 @@ import Link from "next/link";
 
 export default async function RecordsListPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ flagged?: string }>;
 }) {
   const { id } = await params;
+  const resolvedSearch = await searchParams;
+  const showFlaggedOnly = resolvedSearch?.flagged === "true";
   const { project, profile } = await requireProjectMember(id);
   const supabase = await createClient();
 
-  const { data: records } = await supabase
+  let recordsQuery = supabase
     .from("source_records")
     .select("id, publication_title, source_archive, language, date_issued, date_issued_raw, record_status, canonical_ref, created_at")
     .eq("project_id", id)
     .order("created_at", { ascending: false });
+
+  if (showFlaggedOnly) {
+    const { data: flaggedIds } = await supabase
+      .from("record_flags")
+      .select("record_id")
+      .eq("project_id", id);
+
+    const ids = [...new Set((flaggedIds ?? []).map((f: { record_id: string }) => f.record_id))];
+
+    if (ids.length === 0) {
+      recordsQuery = recordsQuery.in("id", ["00000000-0000-0000-0000-000000000000"]);
+    } else {
+      recordsQuery = recordsQuery.in("id", ids);
+    }
+  }
+
+  const { data: records } = await recordsQuery;
 
   // Determine caller's role for upload permission
   let canUpload = profile.global_role === "super_admin";
@@ -56,14 +77,30 @@ export default async function RecordsListPage({
             {project.name}
           </p>
         </div>
-        {canUpload && (
+        <div className="flex items-center gap-3">
           <Link
-            href={`/projects/${id}/upload`}
-            className="px-4 py-2 text-sm font-sans bg-vault-bg text-vault-text rounded-[2px] hover:bg-vault-surface transition-colors"
+            href={
+              showFlaggedOnly
+                ? `/projects/${id}/records`
+                : `/projects/${id}/records?flagged=true`
+            }
+            className={`px-4 py-2 text-sm font-sans rounded-[2px] border transition-colors ${
+              showFlaggedOnly
+                ? "border-amber-400 bg-amber-50 text-amber-700"
+                : "border-desk-border text-desk-muted hover:border-desk-text hover:text-desk-text"
+            }`}
           >
-            Upload Record
+            {showFlaggedOnly ? "Flagged Only" : "Show Flagged"}
           </Link>
-        )}
+          {canUpload && (
+            <Link
+              href={`/projects/${id}/upload`}
+              className="px-4 py-2 text-sm font-sans bg-vault-bg text-vault-text rounded-[2px] hover:bg-vault-surface transition-colors"
+            >
+              Upload Record
+            </Link>
+          )}
+        </div>
       </div>
 
       {(!records || records.length === 0) ? (

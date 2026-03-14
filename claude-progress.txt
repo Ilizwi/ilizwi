@@ -56,13 +56,14 @@ Next: F018 — Annotation Layer (P0, Day 4)
 - plan/2026-03-13-f014-translation-editor-correction-workflow.md written (addendums applied)
 
 ### Session 18 — 2026-03-14
-- F017: Scholarly Side-by-Side Reader — implemented via 2-agent parallel team
-- New route: `/projects/[id]/records/[recordId]/reader` — server component; combined tenancy guard (record + project_id); same signed URL enrichment pattern as record detail page
-- New component: `src/components/records/ScholarlyReader.tsx` — "use client"; full-height flex layout (top strip, left panel, right panel); default layer selection by priority (corrected_translation > machine_translation > corrected_transcription > source_transcription > source_ocr); asset switcher for multi-asset records; PDF iframe for trusted origins (Supabase, NLSA, Ibali); "open in new tab" fallback for non-PDF or untrusted-origin assets (matches FileViewerSection behavior); annotations placeholder strip; layer tabs with type badges + status badges; no hex literals — token-based styling only
+- F017: Scholarly Side-by-Side Reader — implemented via 2-agent parallel team, code reviewed (1 P1 fix), squash merged to main (PR #17)
+- New route: `src/app/(app)/projects/[id]/records/[recordId]/reader/page.tsx` — server component; combined tenancy guard (record + project_id); signed URL enrichment (same pattern as record detail page); derives `supersededIds` + `activeLayers` before passing to ScholarlyReader
+- New component: `src/components/records/ScholarlyReader.tsx` — "use client"; full-height flex layout (top strip, left panel, right panel); default layer selection by priority (corrected_translation > machine_translation > corrected_transcription > source_transcription > source_ocr); asset switcher for multi-asset records; PDF iframe for trusted origins (Supabase, NLSA, Ibali); "open in new tab" fallback for non-PDF or untrusted-origin assets (matches FileViewerSection behavior); annotations placeholder strip; layer tabs with type badges + status badges; token-based styling only (no hex literals)
 - Modified: `src/app/(app)/projects/[id]/records/[recordId]/page.tsx` — "Scholar's Reader →" link button added after h1; conditional on `canOpenReader` (≥1 asset AND ≥1 layer)
-- Addendums applied: token-only styling; default layer priority; open-in-new-tab fallback; combined tenancy guard on reader page; annotations strip compact at 1280×800
-- Build passes clean. All 5 PRD test steps satisfied. F017 PASSED.
-- plan/2026-03-14-f017-scholarly-side-by-side-reader.md written (addendums applied)
+- Addendums applied: token-only styling; default layer priority; open-in-new-tab fallback; combined tenancy guard; annotations strip compact at 1280×800
+- Review P1 fix: reader was passing full text_layers history (including superseded) — now filters to active layers only via same supersededIds derivation as record detail page
+- Build, typecheck, lint all pass. All 5 PRD test steps satisfied. F017 PASSED.
+- plan/2026-03-14-f017-scholarly-side-by-side-reader.md written (addendums + review findings recorded)
 
 ### Session 17 — 2026-03-14
 - F016: Protected-Term and Glossary Rules — implemented via 4-agent parallel team, reviewed (4 findings fixed), squash merged to main (PR #16)

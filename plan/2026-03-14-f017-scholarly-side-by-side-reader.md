@@ -118,3 +118,16 @@ npm run lint         # Must pass
 ```
 
 Manual: navigate to `/projects/[id]/records/[recordId]/reader` with a seeded record; confirm 5 test steps above plus multi-asset and non-PDF fallback scenarios.
+
+---
+
+## Review Findings (resolved)
+
+**P1 — Reader surfaced superseded layers (fixed before merge)**
+- `reader/page.tsx` was passing all `text_layers` rows to `ScholarlyReader`, including superseded versions. Scholars could see obsolete content by default, with duplicate indistinguishable tabs for repeated layer types.
+- Fix: derived `supersededIds` set (same logic as record detail page), filtered to `activeLayers`, passed only active layers to `ScholarlyReader`.
+- Committed in fix commit before squash merge to main.
+
+## Final Status
+
+PASSED — all 5 PRD test steps satisfied. PR #17 squash merged to main 2026-03-14.

@@ -120,6 +120,18 @@ export default async function RecordDetailPage({
     }
   }
 
+  // Whole-word, case-insensitive term matching.
+  // Strategy: tokenise content by splitting on whitespace and stripping leading/trailing
+  // punctuation from each token (Unicode-aware). This avoids false positives like
+  // matching "ink" inside "thinking" while correctly handling historical punctuation.
+  function matchesWholeWord(content: string, term: string): boolean {
+    const termNorm = term.toLowerCase().trim();
+    const tokens = content
+      .split(/\s+/)
+      .map((t) => t.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "").toLowerCase());
+    return tokens.includes(termNorm);
+  }
+
   let matchedRules: { id: string; term: string; rule_type: string; approved_translation: string | null; note: string | null }[] = [];
   if (sourceLayerContent) {
     const { data: glossaryRules } = await supabase
@@ -131,7 +143,7 @@ export default async function RecordDetailPage({
       .order("term", { ascending: true });
 
     matchedRules = (glossaryRules ?? []).filter((rule: { term: string }) =>
-      sourceLayerContent!.toLowerCase().includes(rule.term.toLowerCase())
+      matchesWholeWord(sourceLayerContent!, rule.term)
     );
   }
 

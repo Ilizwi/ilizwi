@@ -115,19 +115,21 @@ export async function updateGlossaryRule(
     return { error: "approved_translation is required when rule type is 'approved_translation'" };
   }
 
-  // Clear approved_translation when rule_type is not 'approved_translation'
-  const safeUpdates = {
+  // Only clear approved_translation if rule_type is explicitly being changed
+  // away from 'approved_translation'. Partial updates (e.g. { active: false })
+  // must not touch the column at all — omitting it from the payload preserves
+  // the existing DB value and avoids a CHECK constraint violation.
+  const payload: Record<string, unknown> = {
     ...updates,
-    approved_translation:
-      updates.rule_type === "approved_translation"
-        ? updates.approved_translation
-        : null,
     updated_at: new Date().toISOString(),
   };
+  if (updates.rule_type !== undefined && updates.rule_type !== "approved_translation") {
+    payload.approved_translation = null;
+  }
 
   const { error: updateError } = await supabase
     .from("glossary_rules")
-    .update(safeUpdates)
+    .update(payload)
     .eq("id", id)
     .eq("project_id", projectId);
 

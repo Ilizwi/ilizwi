@@ -54,7 +54,11 @@ export default async function RecordsListPage({
 
   // Step 3: apply text search — metadata OR text layer IDs
   if (q) {
-    const metaFilter = `publication_title.ilike.%${q}%,source_archive.ilike.%${q}%,canonical_ref.ilike.%${q}%`;
+    // Strip PostgREST .or() structural characters so the filter string stays well-formed.
+    // Commas and parentheses are expression delimiters in PostgREST filter syntax;
+    // periods are field path separators. Removing them is safe for V1 keyword search.
+    const safeQ = q.replace(/[(),.\s]+/g, " ").trim();
+    const metaFilter = `publication_title.ilike.%${safeQ}%,source_archive.ilike.%${safeQ}%,canonical_ref.ilike.%${safeQ}%`;
     if (textLayerIds.length > 0) {
       recordsQuery = recordsQuery.or(
         `${metaFilter},id.in.(${textLayerIds.join(",")})`
@@ -125,6 +129,20 @@ export default async function RecordsListPage({
 
   const recordCount = records?.length ?? 0;
 
+  // Build the flagged toggle URL preserving all active filters
+  const flaggedToggleHref = (() => {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (source) params.set("source", source);
+    if (language) params.set("language", language);
+    if (dateFrom) params.set("date_from", dateFrom);
+    if (dateTo) params.set("date_to", dateTo);
+    if (status) params.set("status", status);
+    if (!showFlaggedOnly) params.set("flagged", "true");
+    const qs = params.toString();
+    return `/projects/${id}/records${qs ? `?${qs}` : ""}`;
+  })();
+
   return (
     <div className="p-8">
       <div className="mb-8 flex items-center justify-between">
@@ -138,11 +156,7 @@ export default async function RecordsListPage({
         </div>
         <div className="flex items-center gap-3">
           <Link
-            href={
-              showFlaggedOnly
-                ? `/projects/${id}/records`
-                : `/projects/${id}/records?flagged=true`
-            }
+            href={flaggedToggleHref}
             className={`px-4 py-2 text-sm font-sans rounded-[2px] border transition-colors ${
               showFlaggedOnly
                 ? "border-amber-400 bg-amber-50 text-amber-700"

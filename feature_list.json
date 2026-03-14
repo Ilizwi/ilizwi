@@ -256,7 +256,7 @@
         "Confirm notes or annotations are visible in the same research context.",
         "Confirm the reader remains usable on a standard laptop viewport without breaking layout."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F018",

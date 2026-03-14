@@ -23,16 +23,20 @@ export async function insertAuditLog(entry: {
   recordId?: string | null;
   metadata?: Record<string, unknown>;
 }): Promise<void> {
-  const supabase = getServiceClient();
-  const { error } = await supabase.from("audit_logs").insert({
-    project_id: entry.projectId,
-    actor_id: entry.actorId,
-    action_type: entry.actionType,
-    record_id: entry.recordId ?? null,
-    metadata: entry.metadata ?? null,
-  });
-  if (error) {
-    console.error("[audit] insert failed", error);
-  }
   // never throws — audit failure must not break the primary action
+  try {
+    const supabase = getServiceClient();
+    const { error } = await supabase.from("audit_logs").insert({
+      project_id: entry.projectId,
+      actor_id: entry.actorId,
+      action_type: entry.actionType,
+      record_id: entry.recordId ?? null,
+      metadata: entry.metadata ?? null,
+    });
+    if (error) {
+      console.error("[audit] insert failed", error);
+    }
+  } catch (e) {
+    console.error("[audit] unexpected error", e);
+  }
 }

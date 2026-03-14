@@ -112,6 +112,14 @@ export default async function ProjectDetailPage({
           >
             Glossary {!isAdmin && <span className="text-desk-muted">(view)</span>} &rarr;
           </Link>
+          {isAdmin && (
+            <Link
+              href={`/projects/${id}/audit`}
+              className="text-sm font-sans text-desk-text underline underline-offset-2"
+            >
+              Activity Trace &rarr;
+            </Link>
+          )}
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/role-guard";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { extractTextFromBuffer } from "@/lib/sources/text-extractor";
+import { insertAuditLog } from "@/lib/audit/log";
 
 // Note: super_admin bypass is intentionally absent here.
 // SELECT policies on source_records, file_assets, text_layers, and storage.objects
@@ -148,6 +149,14 @@ export async function extractTextFromRecord(
   console.log(
     `[extractTextFromRecord] actor=${profile.id} record=${recordId} project=${projectId} layer=${row.id} supersedes=${supersedes_layer_id ?? "none"}`
   );
+
+  await insertAuditLog(supabase, {
+    projectId,
+    actorId: profile.id,
+    actionType: "extract_text",
+    recordId,
+    metadata: { layerId: row.id, layerType: "source_ocr" },
+  });
 
   revalidatePath(`/projects/${projectId}/records/${recordId}`);
   return { error: null, layerId: row.id };

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/role-guard";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { FlagType } from "@/types";
+import { insertAuditLog } from "@/lib/audit/log";
 
 const VALID_FLAG_TYPES: FlagType[] = [
   "illegible",
@@ -130,6 +131,14 @@ export async function addRecordFlag(
     return { error: insertError.message };
   }
 
+  await insertAuditLog(supabase, {
+    projectId: project_id,
+    actorId: profile.id,
+    actionType: "add_record_flag",
+    recordId: record_id,
+    metadata: { flagType: flag_type },
+  });
+
   revalidatePath(`/projects/${project_id}/records/${record_id}`);
   return { error: null };
 }
@@ -176,6 +185,14 @@ export async function updateRecordFlag(
     return { error: updateError.message };
   }
 
+  await insertAuditLog(supabase, {
+    projectId: flag.project_id,
+    actorId: profile.id,
+    actionType: "update_record_flag",
+    recordId: flag.record_id,
+    metadata: { flagId: flag_id },
+  });
+
   revalidatePath(`/projects/${flag.project_id}/records/${flag.record_id}`);
   return { error: null };
 }
@@ -220,6 +237,14 @@ export async function removeRecordFlag(
   if (deleteError) {
     return { error: deleteError.message };
   }
+
+  await insertAuditLog(supabase, {
+    projectId: flag.project_id,
+    actorId: profile.id,
+    actionType: "remove_record_flag",
+    recordId: flag.record_id,
+    metadata: { flagId: flag_id },
+  });
 
   revalidatePath(`/projects/${flag.project_id}/records/${flag.record_id}`);
   revalidatePath(`/projects/${flag.project_id}/records`);

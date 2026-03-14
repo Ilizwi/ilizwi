@@ -12,6 +12,7 @@ import AnnotationsPanel from "@/components/records/AnnotationsPanel";
 import { addAnnotation, updateAnnotation } from "@/lib/actions/annotations";
 import RecordFlagsPanel from "@/components/records/RecordFlagsPanel";
 import { addRecordFlag, updateRecordFlag, removeRecordFlag } from "@/lib/actions/record-flags";
+import CitationExportButton from "@/components/records/CitationExportButton";
 
 export default async function RecordDetailPage({
   params,
@@ -333,8 +334,8 @@ export default async function RecordDetailPage({
         {typedRecord.canonical_ref}
       </h1>
 
-      {canOpenReader && (
-        <div className="mb-8">
+      <div className="mb-8 flex flex-wrap items-center gap-4">
+        {canOpenReader && (
           <Link
             href={`/projects/${id}/records/${recordId}/reader`}
             className="inline-flex items-center gap-1.5 text-sm font-sans px-4 py-2 border border-desk-border rounded-[2px] text-desk-text hover:border-historic hover:text-historic transition-colors duration-hover"
@@ -342,8 +343,9 @@ export default async function RecordDetailPage({
             Scholar&rsquo;s Reader
             <span aria-hidden="true">&rarr;</span>
           </Link>
-        </div>
-      )}
+        )}
+        <CitationExportButton recordId={recordId} canonicalRef={typedRecord.canonical_ref} />
+      </div>
 
       {/* Provenance */}
       <section className="mb-8">

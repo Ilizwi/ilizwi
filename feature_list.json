@@ -271,7 +271,7 @@
         "Reopen the record and confirm the note is still visible.",
         "Edit the note and confirm the updated version persists correctly."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F019",

@@ -177,3 +177,16 @@ export type TranslationMemoryEntry = {
   // Joined from source_records for display
   canonical_ref?: string;
 };
+
+export interface Annotation {
+  id: string;
+  project_id: string;
+  record_id: string;
+  text_layer_id: string | null;
+  annotation_type: AnnotationType;
+  content: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  profiles?: { display_name: string | null; email: string };
+}

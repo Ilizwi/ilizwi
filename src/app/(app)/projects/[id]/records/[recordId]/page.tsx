@@ -3,18 +3,27 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import AddTextLayerForm from "@/components/records/AddTextLayerForm";
-import type { SourceRecord, FileAsset, TextLayer, EnrichedFileAsset } from "@/types";
+import type { SourceRecord, FileAsset, TextLayer, EnrichedFileAsset, Annotation } from "@/types";
 import FileViewerSection from "@/components/records/FileViewerSection";
 import ExtractTextSection from "@/components/records/ExtractTextSection";
 import TextLayerCard from "@/components/records/TextLayerCard";
 import GenerateTranslationSection from "@/components/records/GenerateTranslationSection";
+import AnnotationsPanel from "@/components/records/AnnotationsPanel";
+import { addAnnotation, updateAnnotation } from "@/lib/actions/annotations";
 
 export default async function RecordDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; recordId: string }>;
+  searchParams?: Promise<{
+    editAnnotation?: string;
+    addAnnotationError?: string;
+    editAnnotationError?: string;
+  }>;
 }) {
   const { id, recordId } = await params;
+  const resolvedSearch = await searchParams;
   const { project, profile } = await requireProjectMember(id);
   const supabase = await createClient();
 
@@ -149,6 +158,15 @@ export default async function RecordDetailPage({
     );
   }
 
+  // Annotations — fetched with profiles join for author attribution
+  const { data: annotationsData } = await supabase
+    .from("annotations")
+    .select("*, profiles(display_name, email)")
+    .eq("record_id", recordId)
+    .order("created_at", { ascending: false });
+
+  const annotations = (annotationsData ?? []) as Annotation[];
+
   // Permission: can add text layer?
   // canCorrectTranslation is membership-only (no super_admin bypass) —
   // the saveTranslationCorrection action is membership-only and the
@@ -209,6 +227,30 @@ export default async function RecordDetailPage({
     { label: "Status", value: typedRecord.record_status },
     { label: "Created", value: new Date(typedRecord.created_at).toLocaleDateString() },
   ];
+
+  // Server action wrappers — handle redirects; underlying actions return { error }
+  async function handleAddAnnotation(formData: FormData) {
+    "use server";
+    const result = await addAnnotation({ error: null }, formData);
+    if (result.error) {
+      redirect(
+        `/projects/${id}/records/${recordId}?addAnnotationError=${encodeURIComponent(result.error)}`
+      );
+    }
+  }
+
+  async function handleUpdateAnnotation(formData: FormData) {
+    "use server";
+    const annotationId = formData.get("annotation_id") as string;
+    const result = await updateAnnotation({ error: null }, formData);
+    if (result.error) {
+      redirect(
+        `/projects/${id}/records/${recordId}?editAnnotationError=${encodeURIComponent(result.error)}&editAnnotation=${annotationId}`
+      );
+    } else {
+      redirect(`/projects/${id}/records/${recordId}`);
+    }
+  }
 
   return (
     <div className="p-8">
@@ -361,6 +403,24 @@ export default async function RecordDetailPage({
           />
         )}
         {canAddLayer && <AddTextLayerForm recordId={recordId} projectId={id} />}
+      </section>
+
+      {/* Annotations */}
+      <section className="mb-8">
+        <h2 className="font-serif text-xl text-desk-text mb-4">Annotations</h2>
+        <AnnotationsPanel
+          annotations={annotations}
+          textLayers={typedLayers}
+          projectId={id}
+          recordId={recordId}
+          currentUserId={profile.id}
+          canEditAll={canAddLayer}
+          editAnnotationId={resolvedSearch?.editAnnotation}
+          addAction={handleAddAnnotation}
+          editAction={handleUpdateAnnotation}
+          addError={resolvedSearch?.addAnnotationError}
+          editError={resolvedSearch?.editAnnotationError}
+        />
       </section>
     </div>
   );

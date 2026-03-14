@@ -174,6 +174,10 @@ export default async function RecordDetailPage({
   // super_admin would create a read/write boundary mismatch (same issue
   // removed in F012/F013).
   let canAddLayer = profile.global_role === "super_admin";
+  // canEditAllAnnotations: project_admin or super_admin can edit any annotation.
+  // Researchers can only edit their own (handled by annotation.created_by check in panel).
+  // Do NOT reuse canAddLayer here — researchers can add layers but not edit others' annotations.
+  let canEditAllAnnotations = profile.global_role === "super_admin";
   let canCorrectTranslation = false;
   if (!canAddLayer || !canCorrectTranslation) {
     const { data: membership } = await supabase
@@ -185,6 +189,8 @@ export default async function RecordDetailPage({
     canAddLayer = canAddLayer ||
       membership?.role === "project_admin" ||
       membership?.role === "researcher";
+    canEditAllAnnotations = canEditAllAnnotations ||
+      membership?.role === "project_admin";
     canCorrectTranslation =
       membership?.role === "project_admin" ||
       membership?.role === "researcher" ||
@@ -414,7 +420,7 @@ export default async function RecordDetailPage({
           projectId={id}
           recordId={recordId}
           currentUserId={profile.id}
-          canEditAll={canAddLayer}
+          canEditAll={canEditAllAnnotations}
           editAnnotationId={resolvedSearch?.editAnnotation}
           addAction={handleAddAnnotation}
           editAction={handleUpdateAnnotation}

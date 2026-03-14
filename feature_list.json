@@ -294,6 +294,7 @@
       "description": "Search and Filter",
       "day": 4,
       "priority": "P0",
+      "passes": true,
       "steps": [
         "Search for a known term that exists in at least one imported or uploaded record.",
         "Confirm matching records are returned.",

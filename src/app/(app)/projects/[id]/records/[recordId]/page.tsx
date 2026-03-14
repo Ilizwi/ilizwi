@@ -104,6 +104,37 @@ export default async function RecordDetailPage({
     (l) => l.layer_type === 'machine_translation' && !supersededIds.has(l.id)
   );
 
+  // Glossary matching — find source layer by priority
+  const SOURCE_LAYER_PRIORITY = ['corrected_transcription', 'source_transcription', 'source_ocr'] as const;
+  const hasTranslationLayer = activeLayers.some(
+    (l) => l.layer_type === 'machine_translation' || l.layer_type === 'corrected_translation'
+  );
+  let sourceLayerContent: string | null = null;
+  if (hasTranslationLayer) {
+    for (const layerType of SOURCE_LAYER_PRIORITY) {
+      const found = activeLayers.find((l) => l.layer_type === layerType);
+      if (found) {
+        sourceLayerContent = found.content;
+        break;
+      }
+    }
+  }
+
+  let matchedRules: { id: string; term: string; rule_type: string; approved_translation: string | null; note: string | null }[] = [];
+  if (sourceLayerContent) {
+    const { data: glossaryRules } = await supabase
+      .from("glossary_rules")
+      .select("*")
+      .eq("project_id", id)
+      .eq("language", typedRecord.language)
+      .eq("active", true)
+      .order("term", { ascending: true });
+
+    matchedRules = (glossaryRules ?? []).filter((rule: { term: string }) =>
+      sourceLayerContent!.toLowerCase().includes(rule.term.toLowerCase())
+    );
+  }
+
   // Permission: can add text layer?
   // canCorrectTranslation is membership-only (no super_admin bypass) —
   // the saveTranslationCorrection action is membership-only and the
@@ -138,6 +169,16 @@ export default async function RecordDetailPage({
         return "bg-green-50 text-green-700";
       default:
         return "bg-vault-bg/10 text-desk-muted";
+    }
+  };
+
+  const ruleTypeBadgeClass = (ruleType: string): string => {
+    switch (ruleType) {
+      case "do_not_translate": return "bg-red-50 text-red-700";
+      case "always_flag": return "bg-amber-50 text-amber-700";
+      case "approved_translation": return "bg-green-50 text-green-700";
+      case "preserve_original": return "bg-blue-50 text-blue-700";
+      default: return "bg-vault-bg/10 text-desk-muted";
     }
   };
 
@@ -210,6 +251,33 @@ export default async function RecordDetailPage({
       {/* Text Layers */}
       <section className="mb-8">
         <h2 className="font-serif text-xl text-desk-text mb-4">Text Layers</h2>
+
+        {matchedRules.length > 0 && (
+          <div className="mb-4 border border-desk-border rounded-[2px] overflow-hidden">
+            <div className="bg-vault-bg/5 border-b border-desk-border px-4 py-2 flex items-center justify-between">
+              <span className="text-xs font-sans uppercase tracking-widest text-desk-muted">
+                Glossary Matches ({matchedRules.length})
+              </span>
+              <span className="text-xs font-sans text-desk-muted italic">informational only</span>
+            </div>
+            <div className="divide-y divide-desk-border">
+              {matchedRules.map((rule) => (
+                <div key={rule.id} className="px-4 py-3 flex items-start gap-4">
+                  <span className="font-sans text-sm font-medium text-desk-text min-w-[120px]">{rule.term}</span>
+                  <span className={`inline-block px-2 py-0.5 text-[10px] font-sans uppercase tracking-widest rounded-[2px] ${ruleTypeBadgeClass(rule.rule_type)}`}>
+                    {rule.rule_type.replace(/_/g, " ")}
+                  </span>
+                  {rule.approved_translation && (
+                    <span className="text-sm font-sans text-desk-text">&rarr; {rule.approved_translation}</span>
+                  )}
+                  {rule.note && (
+                    <span className="text-sm font-sans text-desk-muted italic">{rule.note}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {typedLayers.length === 0 ? (
           <p className="text-desk-muted text-sm font-sans">No text layers yet.</p>

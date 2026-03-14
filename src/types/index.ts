@@ -89,6 +89,20 @@ export type GlossaryRuleType =
   | "always_flag"
   | "preserve_original";
 
+export interface GlossaryRule {
+  id: string;
+  project_id: string;
+  term: string;
+  language: string;
+  rule_type: GlossaryRuleType;
+  approved_translation: string | null;
+  note: string | null;
+  active: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export type RecordStatus = "raw" | "in_review" | "approved";
 
 export type SourceRecord = {

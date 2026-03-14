@@ -68,6 +68,12 @@ export default async function ProjectDetailPage({
           >
             View records &rarr;
           </Link>
+          <Link
+            href={`/projects/${id}/trends`}
+            className="text-sm font-sans text-desk-text underline underline-offset-2"
+          >
+            Corpus Trends &rarr;
+          </Link>
           {(isAdmin || callerMembership?.role === "researcher") && (
             <Link
               href={`/projects/${id}/upload`}

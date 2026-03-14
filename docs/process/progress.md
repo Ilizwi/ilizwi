@@ -4,9 +4,9 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 19 |
-| Remaining | 5 |
-| Current Day | 4 |
+| Completed | 20 |
+| Remaining | 4 |
+| Current Day | 5 |
 
 ## Day 1: Foundation
 **Status:** Complete
@@ -52,12 +52,12 @@
 ---
 
 ## Day 4: Reader and Research Workflow
-**Status:** In Progress
+**Status:** Complete
 
 - [x] F017: Scholarly Side-by-Side Reader — PASSED
 - [x] F018: Annotation and Notes — PASSED
 - [x] F019: Uncertainty and Dispute Flags — PASSED
-- [ ] F020: Search and Filter
+- [x] F020: Search and Filter — PASSED
 
 **Deliverable:** Researchers can read, annotate, and search records in one workspace
 
@@ -110,6 +110,16 @@
 - Records list shows canonical_ref in monospace column
 - Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
 - All 5 PRD test steps satisfied. F004 PASSED.
+
+### Session 21 — 2026-03-14
+- F020: Search and Filter — implemented via 2-agent parallel team, 2 P1 review findings fixed, squash merged to main (PR #20)
+- New `src/components/records/RecordSearchFilters.tsx`: plain server component GET form; text search (name="q"), source select (ibali/nlsa/wits/manual_readex), language select (xh/zu/st/nl/en), status select (raw/in_review/approved), date range inputs; hidden `flagged` input preserves flagged filter across search submissions; Clear filters link visible when any filter is active; ILIZWI design tokens only
+- Modified `src/app/(app)/projects/[id]/records/page.tsx`: extended searchParams (q, source, language, date_from, date_to, status); text search — `text_layers.content` ilike subquery (RLS-scoped, no project_id on text_layers), main query uses `.or()` on metadata fields + `id.in(text_layer_ids)` when non-empty; structured filters as `.eq`/`.gte`/`.lte`; flagged filter preserved in same query chain (intersection); result count; empty state distinguishes no-records from no-match
+- P1 fix (review): `q` sanitized before embedding in PostgREST `.or()` string — strips `,`, `(`, `)`, `.` to prevent filter expression breakage
+- P1 fix (review): flagged toggle href rebuilt from all active search params (`flaggedToggleHref`) — clicking Show Flagged no longer discards q/source/language/status/date filters
+- V1 known limitations: records with only `date_issued_raw` won't match date range; language filter covers curated list only (xh/zu/st/nl/en)
+- Build, typecheck, lint all pass. All 5 PRD test steps satisfied. F020 PASSED.
+- Day 4 complete — all 4 P0 features done. Next: Day 5 (F021 Citation Packet Export, P1).
 
 ### Session 20 — 2026-03-14
 - F019: Uncertainty and Dispute Flags — implemented via 4-agent parallel team, code reviewed (2 P1 findings fixed), squash merged to main (PR #19)

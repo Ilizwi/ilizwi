@@ -2,7 +2,8 @@
 
 Date: 2026-03-14
 Branch: `codex/f020-search-and-filter`
-Status: APPROVED WITH ADDENDUMS
+Status: MERGED — PR #20 squash merged to main
+Result: F020 PASSED
 
 ---
 
@@ -195,4 +196,14 @@ npm run lint
 - No new Supabase RLS needed — all queries scoped to project_id via existing policies
 - Language filter is curated (xh, zu, st, nl, en); records in other languages not directly filterable from UI (V1 known limitation)
 - date_issued filtering excludes records with only date_issued_raw (V1 known limitation, no UX change needed)
-- Text layer subquery uses project_id scope — check whether text_layers table has project_id or requires a join via source_records; adjust query accordingly
+- text_layers has no project_id — RLS scopes readable rows to member projects; main query's .eq("project_id") handles final intersection
+
+## Review Findings (Session 21)
+
+**P1 — Raw `q` in PostgREST `.or()` filter** (fixed)
+- Search term was embedded directly into the filter string. Commas and parentheses are structural characters in PostgREST filter syntax and would break query parsing.
+- Fix: `safeQ = q.replace(/[(),.\s]+/g, " ").trim()` applied before building the metaFilter string. text_layers ilike call is parameterized and unaffected.
+
+**P1 — Flagged toggle discarded active filters** (fixed)
+- The Show Flagged / Flagged Only link was hardcoded to `/projects/${id}/records` or `?flagged=true`, wiping q/source/language/status/date.
+- Fix: `flaggedToggleHref` computed from all active search params with URLSearchParams, toggling only the `flagged` key.

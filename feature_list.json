@@ -301,8 +301,7 @@
         "Apply filters such as source archive, language, or date.",
         "Confirm the result set updates correctly when filters are applied.",
         "Open a result and confirm the user lands in the correct record context."
-      ],
-      "passes": false
+      ]
     },
     {
       "id": "F021",

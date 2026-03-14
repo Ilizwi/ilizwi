@@ -64,6 +64,8 @@ Next: Day 5 features (P1) — see feature_list.json
 - Modified `src/app/(app)/projects/[id]/records/page.tsx`: extended searchParams (q, source, language, date_from, date_to, status); deterministic text search — text_layers ilike subquery (no project_id on text_layers — RLS scopes; main query .eq handles intersection), then single records query with .or(metadata fields + id.in(text_layer_ids)); structured filters applied as .eq/.gte/.lte; flagged filter preserved in same query chain (intersection semantics); result count displayed; empty state distinguishes no-records from no-match; RecordSearchFilters rendered above table
 - All addendums from plan review applied: no "use client", deterministic search path, flagged intersection in same chain, canonical-ref navigation preserved, curated language list
 - Known V1 limitations: records with only date_issued_raw won't match date range; languages outside curated list not directly filterable
+- P1 fix: sanitize `q` before embedding in PostgREST `.or()` filter — strips `,()`. chars that break expression parsing
+- P1 fix: flagged toggle link (`flaggedToggleHref`) rebuilt from all active params — no longer discards active filters
 - Build, typecheck, lint all pass. All 8 acceptance criteria satisfied. F020 PASSED.
 - Day 4 complete — all P0 features done (F017–F020).
 - plan/2026-03-14-f020-search-and-filter.md written (addendums applied)

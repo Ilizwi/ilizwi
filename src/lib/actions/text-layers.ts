@@ -130,7 +130,7 @@ export async function addTextLayer(
     `[addTextLayer] actor=${profile.id} added layer=${row.id} type=${layerType} to record=${recordId} project=${projectId}${supersedesLayerId ? ` supersedes=${supersedesLayerId}` : ""}`
   );
 
-  await insertAuditLog(supabase, {
+  await insertAuditLog({
     projectId,
     actorId: profile.id,
     actionType: "add_text_layer",
@@ -194,7 +194,7 @@ export async function updateLayerStatus(
     `[updateLayerStatus] actor=${profile.id} layer=${layerId} status=${newStatus} record=${recordId} project=${projectId}`
   );
 
-  await insertAuditLog(supabase, {
+  await insertAuditLog({
     projectId,
     actorId: profile.id,
     actionType: "update_layer_status",

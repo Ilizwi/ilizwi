@@ -160,7 +160,7 @@ export async function generateMachineTranslation(
     project_id: projectId,
   });
 
-  await insertAuditLog(supabase, {
+  await insertAuditLog({
     projectId,
     actorId: profile.id,
     actionType: "generate_translation",

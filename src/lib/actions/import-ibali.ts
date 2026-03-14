@@ -214,7 +214,7 @@ export async function importFromIbali(
     `[importFromIbali] actor=${profile.id} ibali_item=${itemId} record=${recordId} ref=${canonicalRef} project=${projectId}`
   );
 
-  await insertAuditLog(supabase, {
+  await insertAuditLog({
     projectId,
     actorId: profile.id,
     actionType: "import_ibali",

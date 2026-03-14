@@ -140,7 +140,7 @@ export async function addAnnotation(
     return { error: insertError.message };
   }
 
-  await insertAuditLog(supabase, {
+  await insertAuditLog({
     projectId: project_id,
     actorId: profile.id,
     actionType: "add_annotation",
@@ -196,7 +196,7 @@ export async function updateAnnotation(
     return { error: updateError.message };
   }
 
-  await insertAuditLog(supabase, {
+  await insertAuditLog({
     projectId: annotation.project_id,
     actorId: profile.id,
     actionType: "update_annotation",

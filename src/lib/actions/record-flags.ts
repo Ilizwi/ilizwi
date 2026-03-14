@@ -131,7 +131,7 @@ export async function addRecordFlag(
     return { error: insertError.message };
   }
 
-  await insertAuditLog(supabase, {
+  await insertAuditLog({
     projectId: project_id,
     actorId: profile.id,
     actionType: "add_record_flag",
@@ -185,7 +185,7 @@ export async function updateRecordFlag(
     return { error: updateError.message };
   }
 
-  await insertAuditLog(supabase, {
+  await insertAuditLog({
     projectId: flag.project_id,
     actorId: profile.id,
     actionType: "update_record_flag",
@@ -238,7 +238,7 @@ export async function removeRecordFlag(
     return { error: deleteError.message };
   }
 
-  await insertAuditLog(supabase, {
+  await insertAuditLog({
     projectId: flag.project_id,
     actorId: profile.id,
     actionType: "remove_record_flag",

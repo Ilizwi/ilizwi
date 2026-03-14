@@ -173,7 +173,7 @@ export async function uploadRecord(
     `[uploadRecord] actor=${profile.id} uploaded record=${recordId} ref=${canonicalRef} file=${safeFilename} (${file.type}, ${file.size}B) to project=${projectId}`
   );
 
-  await insertAuditLog(supabase, {
+  await insertAuditLog({
     projectId,
     actorId: profile.id,
     actionType: "upload_record",

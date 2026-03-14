@@ -150,7 +150,7 @@ export async function extractTextFromRecord(
     `[extractTextFromRecord] actor=${profile.id} record=${recordId} project=${projectId} layer=${row.id} supersedes=${supersedes_layer_id ?? "none"}`
   );
 
-  await insertAuditLog(supabase, {
+  await insertAuditLog({
     projectId,
     actorId: profile.id,
     actionType: "extract_text",

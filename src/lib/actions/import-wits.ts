@@ -209,7 +209,7 @@ export async function importFromWits(
     `[importFromWits] actor=${profile.id} wits_ref=${canonicalRef} record=${recordId} ref=${recordRef} project=${projectId}`
   );
 
-  await insertAuditLog(supabase, {
+  await insertAuditLog({
     projectId,
     actorId: profile.id,
     actionType: "import_wits",

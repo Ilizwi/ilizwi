@@ -253,7 +253,7 @@ export async function importFromNlsa(
     `[importFromNlsa] actor=${profile.id} nlsa_ref=${sourceIdentifier} record=${recordId} ref=${canonicalRef} project=${projectId}`
   );
 
-  await insertAuditLog(supabase, {
+  await insertAuditLog({
     projectId,
     actorId: profile.id,
     actionType: "import_nlsa",

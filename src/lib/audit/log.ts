@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { getServiceClient } from "@/lib/supabase/service";
 
 export type AuditActionType =
   | "upload_record"
@@ -16,16 +16,14 @@ export type AuditActionType =
   | "update_record_flag"
   | "remove_record_flag";
 
-export async function insertAuditLog(
-  supabase: SupabaseClient,
-  entry: {
-    projectId: string;
-    actorId: string;
-    actionType: AuditActionType;
-    recordId?: string | null;
-    metadata?: Record<string, unknown>;
-  }
-): Promise<void> {
+export async function insertAuditLog(entry: {
+  projectId: string;
+  actorId: string;
+  actionType: AuditActionType;
+  recordId?: string | null;
+  metadata?: Record<string, unknown>;
+}): Promise<void> {
+  const supabase = getServiceClient();
   const { error } = await supabase.from("audit_logs").insert({
     project_id: entry.projectId,
     actor_id: entry.actorId,

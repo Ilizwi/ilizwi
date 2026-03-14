@@ -103,7 +103,7 @@ export async function saveTranslationCorrection(
     project_id: projectId,
   });
 
-  await insertAuditLog(supabase, {
+  await insertAuditLog({
     projectId,
     actorId: profile.id,
     actionType: "save_translation_correction",

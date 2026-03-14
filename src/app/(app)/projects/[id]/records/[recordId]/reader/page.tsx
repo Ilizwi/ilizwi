@@ -56,7 +56,7 @@ export default async function ReaderPage({
     })
   );
 
-  // Text layers
+  // Text layers — fetch all, then derive active-only view (mirrors record detail page)
   const { data: textLayers } = await supabase
     .from("text_layers")
     .select("*")
@@ -65,11 +65,21 @@ export default async function ReaderPage({
 
   const typedLayers = (textLayers ?? []) as TextLayer[];
 
+  // Active layers only: exclude any layer that is referenced by another layer's
+  // supersedes_layer_id. This mirrors the exact logic on the record detail page
+  // and ensures the reader never surfaces obsolete/superseded versions.
+  const supersededIds = new Set(
+    typedLayers
+      .map((l) => l.supersedes_layer_id)
+      .filter(Boolean) as string[]
+  );
+  const activeLayers = typedLayers.filter((l) => !supersededIds.has(l.id));
+
   return (
     <ScholarlyReader
       record={typedRecord}
       fileAssets={enrichedAssets}
-      textLayers={typedLayers}
+      textLayers={activeLayers}
       projectId={id}
       projectName={project.name}
     />

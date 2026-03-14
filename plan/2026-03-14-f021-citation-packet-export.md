@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-14
 **Branch:** `codex/f021-citation-packet-export`
-**Status:** In progress
+**Status:** PASSED — merged to main (PR #21, 2026-03-14)
 
 ---
 

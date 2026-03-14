@@ -4,9 +4,9 @@
 
 ## Current State
 As of: 2026-03-14
-Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014, F015, F016, F017, F018, F019, F020
-Day 1 complete. Day 2 complete. Day 3 complete (5/5 features done). Day 4 complete (4/4 done). All P0 features complete.
-Next: Day 5 features (P1) — see feature_list.json
+Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014, F015, F016, F017, F018, F019, F020, F021
+Day 1 complete. Day 2 complete. Day 3 complete (5/5 features done). Day 4 complete (4/4 done). Day 5 in progress (1/4 done). All P0 features complete.
+Next: F022 Corpus Trend View (Day 5, P1)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -28,13 +28,15 @@ Next: Day 5 features (P1) — see feature_list.json
 - F017: Scholarly Side-by-Side Reader — PASSED (2026-03-14)
 - F018: Annotation and Notes — PASSED (2026-03-14)
 - F019: Uncertainty and Dispute Flags — PASSED (2026-03-14)
+- F020: Search and Filter — PASSED (2026-03-14)
+- F021: Citation Packet Export — PASSED (2026-03-14)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
 ## Next Actions
-- Day 5 P1 features — see feature_list.json for next unblocked feature
+- F022 Corpus Trend View (Day 5, P1) — next unblocked feature
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -56,6 +58,17 @@ Next: Day 5 features (P1) — see feature_list.json
 - Both layers (MT draft + corrected_translation) remain active — no supersession, no cross-type linking; both accessible on record reopen
 - Build passes clean (no warnings). All 5 PRD test steps satisfied. F014 PASSED.
 - plan/2026-03-13-f014-translation-editor-correction-workflow.md written (addendums applied)
+
+### Session 22 — 2026-03-14
+- F021: Citation Packet Export — implemented, all addendums applied, squash merged to main (PR #21)
+- No DB migration required — all required data exists on source_records, text_layers, annotations, and profiles
+- New shared module `src/lib/citation/citation-packet.ts`: `CitationPacket` type; `serializeToText()` (plain-text format with all sections); `serializeToJSON()` (indented JSON); `sanitizeCitationFilename()` (strips `/`, `:`, spaces from canonical_ref). No `"use server"` — safe to import from both server actions and client components.
+- New server action `src/lib/actions/citation-export.ts`: `getCitationPacket(recordId)` — `requireAuth()` → query record by id → extract project_id from record → verify membership (super_admin bypass); queries text_layers (all, asc by created_at) and annotations with `profiles(display_name, email)` join; returns typed `CitationPacket` with stable `text_layers: []` / `annotations: []`
+- New client component `src/components/records/CitationExportButton.tsx`: two buttons (.txt and .json); per-button loading state; inline error text (no new toast dependency); blob download via `URL.createObjectURL` + programmatic anchor + `revokeObjectURL`; filename sanitized from canonical_ref
+- Modified `src/app/(app)/projects/[id]/records/[recordId]/page.tsx`: `CitationExportButton` rendered alongside Scholar's Reader link in the record header area; `recordId` and `canonicalRef` passed as props
+- Addendums applied: server/client boundary clean (serializers in non-server shared module); real field names (`source_identifier`, `source_url`); auth in action itself (derives project_id from record); sanitized filenames; stable empty arrays in JSON; inline error UI; profiles join reuses existing pattern
+- Build, typecheck, lint all pass. All 5 PRD test steps satisfied. F021 PASSED.
+- plan/2026-03-14-f021-citation-packet-export.md written with addendums
 
 ### Session 21 — 2026-03-14
 - F020: Search and Filter — implemented via 2-agent parallel team, build/typecheck/lint all pass

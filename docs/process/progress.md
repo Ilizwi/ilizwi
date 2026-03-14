@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 20 |
-| Remaining | 4 |
+| Completed | 21 |
+| Remaining | 3 |
 | Current Day | 5 |
 
 ## Day 1: Foundation
@@ -64,9 +64,9 @@
 ---
 
 ## Day 5: Reporting, Discovery, and Polish
-**Status:** Not Started
+**Status:** In progress (1/4 done)
 
-- [ ] F021: Citation Packet Export
+- [x] F021: Citation Packet Export — PASSED
 - [ ] F022: Corpus Trend View
 - [ ] F023: Related Text Suggestions
 - [ ] F024: Admin Record Audit and Activity Trace
@@ -110,6 +110,15 @@
 - Records list shows canonical_ref in monospace column
 - Deferred: storage path alignment with canonical_ref; backfill of real refs for legacy rows
 - All 5 PRD test steps satisfied. F004 PASSED.
+
+### Session 22 — 2026-03-14
+- F021: Citation Packet Export — implemented, all addendums applied, squash merged to main (PR #21)
+- No DB migration required
+- New: `src/lib/citation/citation-packet.ts` (shared, no `"use server"`) — `CitationPacket` type, `serializeToText`, `serializeToJSON`, `sanitizeCitationFilename`
+- New: `src/lib/actions/citation-export.ts` — `getCitationPacket(recordId)` server action with explicit auth (derives project_id from record), membership guard, text_layers + annotations queries with profiles join, stable empty arrays
+- New: `src/components/records/CitationExportButton.tsx` — client component, two download buttons (.txt/.json), per-button loading, inline error, blob download
+- Modified: `src/app/(app)/projects/[id]/records/[recordId]/page.tsx` — `CitationExportButton` added in record header alongside Scholar's Reader link
+- Build, typecheck, lint all pass. All 5 PRD test steps satisfied. F021 PASSED.
 
 ### Session 21 — 2026-03-14
 - F020: Search and Filter — implemented via 2-agent parallel team, 2 P1 review findings fixed, squash merged to main (PR #20)

@@ -316,7 +316,7 @@
         "Confirm the export includes the relevant text layers and/or notes.",
         "Confirm the export downloads or opens successfully in the expected format."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F022",

@@ -4,9 +4,9 @@
 
 ## Current State
 As of: 2026-03-14
-Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014, F015, F016
-Day 1 complete. Day 2 complete. Day 3 complete (5/5 features done).
-Next: F017 — Scholarly Side-by-Side Reader (P0, Day 4)
+Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014, F015, F016, F017
+Day 1 complete. Day 2 complete. Day 3 complete (5/5 features done). Day 4 in progress.
+Next: F018 — Annotation Layer (P0, Day 4)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -25,13 +25,14 @@ Next: F017 — Scholarly Side-by-Side Reader (P0, Day 4)
 - F014: Translation Editor and Correction Workflow — PASSED (2026-03-13)
 - F015: Translation Memory — PASSED (2026-03-14)
 - F016: Protected-Term and Glossary Rules — PASSED (2026-03-14)
+- F017: Scholarly Side-by-Side Reader — PASSED (2026-03-14)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
 ## Next Actions
-- F017: Scholarly Side-by-Side Reader (P0, Day 4) — next unblocked P0
+- F018: Annotation Layer (P0, Day 4) — next unblocked P0
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -53,6 +54,15 @@ Next: F017 — Scholarly Side-by-Side Reader (P0, Day 4)
 - Both layers (MT draft + corrected_translation) remain active — no supersession, no cross-type linking; both accessible on record reopen
 - Build passes clean (no warnings). All 5 PRD test steps satisfied. F014 PASSED.
 - plan/2026-03-13-f014-translation-editor-correction-workflow.md written (addendums applied)
+
+### Session 18 — 2026-03-14
+- F017: Scholarly Side-by-Side Reader — implemented via 2-agent parallel team
+- New route: `/projects/[id]/records/[recordId]/reader` — server component; combined tenancy guard (record + project_id); same signed URL enrichment pattern as record detail page
+- New component: `src/components/records/ScholarlyReader.tsx` — "use client"; full-height flex layout (top strip, left panel, right panel); default layer selection by priority (corrected_translation > machine_translation > corrected_transcription > source_transcription > source_ocr); asset switcher for multi-asset records; PDF iframe for trusted origins (Supabase, NLSA, Ibali); "open in new tab" fallback for non-PDF or untrusted-origin assets (matches FileViewerSection behavior); annotations placeholder strip; layer tabs with type badges + status badges; no hex literals — token-based styling only
+- Modified: `src/app/(app)/projects/[id]/records/[recordId]/page.tsx` — "Scholar's Reader →" link button added after h1; conditional on `canOpenReader` (≥1 asset AND ≥1 layer)
+- Addendums applied: token-only styling; default layer priority; open-in-new-tab fallback; combined tenancy guard on reader page; annotations strip compact at 1280×800
+- Build passes clean. All 5 PRD test steps satisfied. F017 PASSED.
+- plan/2026-03-14-f017-scholarly-side-by-side-reader.md written (addendums applied)
 
 ### Session 17 — 2026-03-14
 - F016: Protected-Term and Glossary Rules — implemented via 4-agent parallel team, reviewed (4 findings fixed), squash merged to main (PR #16)

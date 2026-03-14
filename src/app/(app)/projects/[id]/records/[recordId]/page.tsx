@@ -90,6 +90,8 @@ export default async function RecordDetailPage({
   const activeLayers = sortedLayers.filter((l) => !supersededIds.has(l.id));
   const supersededLayers = sortedLayers.filter((l) => supersededIds.has(l.id));
 
+  const canOpenReader = typedAssets.length > 0 && typedLayers.length > 0;
+
   // Idempotency hint — does a file_extract source_ocr layer already exist?
   const hasExistingSourceOcr = typedLayers.some(
     (l) => l.layer_type === "source_ocr" && l.source_method === "file_extract"
@@ -226,6 +228,18 @@ export default async function RecordDetailPage({
       <h1 className="font-serif text-3xl text-desk-text tracking-tight mb-8">
         {typedRecord.canonical_ref}
       </h1>
+
+      {canOpenReader && (
+        <div className="mb-8">
+          <Link
+            href={`/projects/${id}/records/${recordId}/reader`}
+            className="inline-flex items-center gap-1.5 text-sm font-sans px-4 py-2 border border-desk-border rounded-[2px] text-desk-text hover:border-historic hover:text-historic transition-colors duration-hover"
+          >
+            Scholar&rsquo;s Reader
+            <span aria-hidden="true">&rarr;</span>
+          </Link>
+        </div>
+      )}
 
       {/* Provenance */}
       <section className="mb-8">

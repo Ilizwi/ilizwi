@@ -4,9 +4,9 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 16 |
-| Remaining | 8 |
-| Current Day | 3 |
+| Completed | 17 |
+| Remaining | 7 |
+| Current Day | 4 |
 
 ## Day 1: Foundation
 **Status:** Complete
@@ -52,9 +52,9 @@
 ---
 
 ## Day 4: Reader and Research Workflow
-**Status:** Not Started
+**Status:** In Progress
 
-- [ ] F017: Scholarly Side-by-Side Reader
+- [x] F017: Scholarly Side-by-Side Reader — PASSED
 - [ ] F018: Annotation and Notes
 - [ ] F019: Uncertainty and Dispute Flags
 - [ ] F020: Search and Filter

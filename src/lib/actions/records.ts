@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/role-guard";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { generateCanonicalRef, appendCollisionSuffix, MAX_COLLISION_RETRIES } from "@/lib/records/canonical-ref";
+import { insertAuditLog } from "@/lib/audit/log";
 
 const ALLOWED_MIME_TYPES = [
   "application/pdf",
@@ -171,6 +172,14 @@ export async function uploadRecord(
   console.log(
     `[uploadRecord] actor=${profile.id} uploaded record=${recordId} ref=${canonicalRef} file=${safeFilename} (${file.type}, ${file.size}B) to project=${projectId}`
   );
+
+  await insertAuditLog(supabase, {
+    projectId,
+    actorId: profile.id,
+    actionType: "upload_record",
+    recordId,
+    metadata: { canonicalRef: canonicalRef, filename: safeFilename, sourceType },
+  });
 
   revalidatePath(`/projects/${projectId}/records`);
   return { error: null, recordId };

@@ -14,6 +14,7 @@ import {
   mapNlsaItem,
   extractNlsaRefs,
 } from "@/lib/sources/nlsa";
+import { insertAuditLog } from "@/lib/audit/log";
 
 const NLSA_BASE = "https://cdm21048.contentdm.oclc.org";
 
@@ -251,6 +252,14 @@ export async function importFromNlsa(
   console.log(
     `[importFromNlsa] actor=${profile.id} nlsa_ref=${sourceIdentifier} record=${recordId} ref=${canonicalRef} project=${projectId}`
   );
+
+  await insertAuditLog(supabase, {
+    projectId,
+    actorId: profile.id,
+    actionType: "import_nlsa",
+    recordId,
+    metadata: { canonicalRef, sourceIdentifier },
+  });
 
   revalidatePath(`/projects/${projectId}/records`);
   return { error: null, recordId };

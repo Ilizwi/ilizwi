@@ -10,6 +10,7 @@ import {
   MAX_COLLISION_RETRIES,
 } from "@/lib/records/canonical-ref";
 import { fetchWitsItem, validateWitsRef, normalizeWitsRef } from "@/lib/sources/wits";
+import { insertAuditLog } from "@/lib/audit/log";
 
 // --- Permission guard (mirrors assertImportPermission in import-nlsa.ts exactly) ---
 
@@ -207,6 +208,14 @@ export async function importFromWits(
   console.log(
     `[importFromWits] actor=${profile.id} wits_ref=${canonicalRef} record=${recordId} ref=${recordRef} project=${projectId}`
   );
+
+  await insertAuditLog(supabase, {
+    projectId,
+    actorId: profile.id,
+    actionType: "import_wits",
+    recordId,
+    metadata: { canonicalRef: recordRef, sourceIdentifier: canonicalRef },
+  });
 
   revalidatePath(`/projects/${projectId}/records`);
   return { error: null, recordId };

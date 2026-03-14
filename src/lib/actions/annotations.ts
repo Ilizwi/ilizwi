@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/role-guard";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AnnotationType } from "@/types";
+import { insertAuditLog } from "@/lib/audit/log";
 
 const VALID_ANNOTATION_TYPES: AnnotationType[] = [
   "editorial_note",
@@ -139,6 +140,14 @@ export async function addAnnotation(
     return { error: insertError.message };
   }
 
+  await insertAuditLog(supabase, {
+    projectId: project_id,
+    actorId: profile.id,
+    actionType: "add_annotation",
+    recordId: record_id,
+    metadata: { annotationType: annotation_type },
+  });
+
   revalidatePath(`/projects/${project_id}/records/${record_id}`);
   return { error: null };
 }
@@ -186,6 +195,14 @@ export async function updateAnnotation(
   if (updateError) {
     return { error: updateError.message };
   }
+
+  await insertAuditLog(supabase, {
+    projectId: annotation.project_id,
+    actorId: profile.id,
+    actionType: "update_annotation",
+    recordId: annotation.record_id,
+    metadata: { annotationId: annotation_id },
+  });
 
   revalidatePath(
     `/projects/${annotation.project_id}/records/${annotation.record_id}`

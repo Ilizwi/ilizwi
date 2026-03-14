@@ -4,9 +4,9 @@
 
 ## Current State
 As of: 2026-03-14
-Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014, F015
-Day 1 complete. Day 2 complete. Day 3 in progress (4/5 features done).
-Next: F016 — Glossary and Controlled Vocabulary (P0, Day 3)
+Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014, F015, F016
+Day 1 complete. Day 2 complete. Day 3 complete (5/5 features done).
+Next: F017 — Scholarly Side-by-Side Reader (P0, Day 4)
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -24,13 +24,14 @@ Next: F016 — Glossary and Controlled Vocabulary (P0, Day 3)
 - F013: Machine Translation Draft Generation — PASSED (2026-03-13)
 - F014: Translation Editor and Correction Workflow — PASSED (2026-03-13)
 - F015: Translation Memory — PASSED (2026-03-14)
+- F016: Protected-Term and Glossary Rules — PASSED (2026-03-14)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
 ## Next Actions
-- F016: Glossary and Controlled Vocabulary (P0, Day 3) — next unblocked P0
+- F017: Scholarly Side-by-Side Reader (P0, Day 4) — next unblocked P0
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -52,6 +53,19 @@ Next: F016 — Glossary and Controlled Vocabulary (P0, Day 3)
 - Both layers (MT draft + corrected_translation) remain active — no supersession, no cross-type linking; both accessible on record reopen
 - Build passes clean (no warnings). All 5 PRD test steps satisfied. F014 PASSED.
 - plan/2026-03-13-f014-translation-editor-correction-workflow.md written (addendums applied)
+
+### Session 17 — 2026-03-14
+- F016: Protected-Term and Glossary Rules — implemented via 4-agent parallel team, reviewed (4 findings fixed), squash merged to main (PR #16)
+- Migration `20260314000003`: `glossary_rules` table — `rule_type` CHECK (4 enum values), `approved_translation` NOT NULL CHECK when `rule_type='approved_translation'`, partial unique index `(project_id, lower(term), language) WHERE active=true` (case-insensitive deduplication), lookup index `(project_id, language, active)`, RLS SELECT (any project member or super_admin), INSERT/UPDATE (project_admin or super_admin)
+- Migration `20260314000004` (review fix): expanded SELECT policy to include `super_admin`, matching app-layer access model used throughout
+- New server actions `src/lib/actions/glossary-rules.ts`: `createGlossaryRule` (FormData-compatible, validates approved_translation required for that rule_type, deduplication error surfaced), `updateGlossaryRule` (partial-update safe — only clears approved_translation when rule_type is explicitly changed away from it, preserves existing value on deactivation to avoid CHECK violation)
+- New page `src/app/(app)/projects/[id]/glossary/page.tsx`: server component, all members can view, project_admin/super_admin see create form + edit + deactivate; `?edit=<id>` param surfaces inline edit form with pre-filled values; create/edit/deactivate errors redirect back with query param error banners; deactivate-only workflow never violates CHECK constraint
+- Modified `src/app/(app)/projects/[id]/page.tsx`: Glossary nav link visible to all members, "(view)" suffix shown for non-admins
+- Modified `src/app/(app)/projects/[id]/records/[recordId]/page.tsx`: source layer resolved by priority (corrected_transcription → source_transcription → source_ocr); glossary rules fetched only when translation layer exists; whole-word tokeniser replaces substring search (split on whitespace, strip edge punctuation via Unicode-aware regex, exact token comparison — no false positives like "ink" matching "thinking"); Glossary Matches panel with rule type badges rendered inline above layer list
+- Added `GlossaryRule` interface to `src/types/index.ts`
+- Review findings fixed: (P0) partial-update CHECK violation on deactivate; (P1) edit UI missing; (P1) super_admin excluded from SELECT policy; (P1) substring matching causing false positives
+- Build, typecheck, lint all pass. All 6 PRD test steps satisfied. F016 PASSED.
+- plan/2026-03-14-f016-glossary-controlled-vocabulary.md written
 
 ### Session 16 — 2026-03-14
 - F015: Translation Memory — implemented via 3-agent parallel team, PR #15 open for review

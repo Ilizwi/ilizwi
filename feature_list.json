@@ -241,7 +241,7 @@
         "Confirm the term is handled according to the configured rule inside the translation workflow.",
         "Confirm the rule can be edited later without deleting the underlying record text."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F017",

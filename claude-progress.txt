@@ -36,6 +36,39 @@ Day 1–5 complete. All P0, P1, and P2 features complete. EP001 post-stage enhan
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
+- GOOGLE_TRANSLATE_API_KEY and ANTHROPIC_API_KEY missing from .env.local — translation features will not work in local dev until set. Must verify these are set in Vercel for production.
+
+## QA Session — 2026-03-16 (Release QA / Demo Readiness)
+
+**Build/Lint/Types:** All pass clean. No warnings or errors.
+
+**Auth & Routes:** All guards verified correct in code.
+- middleware.ts: protects all routes except /login and /auth/callback
+- requireAuth(), requireSuperAdmin(), requireProjectMember() all correct
+- Admin users page gated by requireSuperAdmin()
+
+**Translation Provenance — EP001:**
+- Google and Claude drafts coexist as separate TextLayer records ✓
+- Provider labels "Google Translate" / "Claude (Anthropic)" present via PROVIDER_DISPLAY_LABELS ✓
+- Failure handling: descriptive errors, Google draft preserved on Claude failure ✓
+
+**Bugs fixed in this session (branch codex/qa-demo-hardening):**
+- TextLayerCard: added provider badge to header when translation_provider is set — now visually distinguishable at a glance
+- ScholarlyReader: layer tabs now show provider name for MT layers (e.g. "Machine Translation · Google Translate"); selected layer metadata also shows provider badge
+
+**Issues deferred:**
+- ScholarlyReader annotations strip hardcoded "None yet." — stub not connected to real annotations; defer post-demo
+- TranslationEditorForm title doesn't mention which provider draft is being corrected — minor, defer
+
+**Demo Data:**
+- No seed data in repo — user must verify Supabase has at least one clean demo record covering the full demo path
+- Storage bucket and signed URLs appear correctly implemented
+
+**Env Vars:**
+- SUPABASE keys: SET ✓
+- GOOGLE_TRANSLATE_API_KEY: NOT SET in .env.local (must set for local testing)
+- ANTHROPIC_API_KEY: NOT SET in .env.local (must set for local testing)
+- Vercel production vars: user must verify all four keys are set
 
 ## Post-Stage Enhancements
 - EP001: Claude Translation Escalation Path — SHIPPED (PR #25, squash merged to main 2026-03-16)

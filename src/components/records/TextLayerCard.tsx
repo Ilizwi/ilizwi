@@ -51,6 +51,12 @@ export default function TextLayerCard({
           {LAYER_TYPE_LABELS[layer.layer_type]}
         </span>
 
+        {layer.translation_provider && (
+          <span className="inline-block px-2 py-0.5 text-[10px] font-sans uppercase tracking-widest rounded-[2px] bg-historic/10 text-historic">
+            {PROVIDER_DISPLAY_LABELS[layer.translation_provider] ?? layer.translation_provider}
+          </span>
+        )}
+
         <span className={`inline-block px-2 py-0.5 text-[10px] font-sans uppercase tracking-widest rounded-[2px] ${LAYER_STATUS_STYLES[layer.status]}`}>
           {layer.status.replace(/_/g, " ")}
         </span>

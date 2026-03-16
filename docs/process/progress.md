@@ -88,6 +88,17 @@
 
 ## Session Log
 
+### Session 28 — 2026-03-16 (QA / Demo Readiness)
+- Full release QA pass: build ✓, lint ✓, types ✓ — all clean
+- Auth/routing guards verified correct: middleware, requireAuth, requireSuperAdmin, requireProjectMember
+- EP001 translation provenance verified: Google and Claude drafts coexist; provider labels correct; failure handling clean
+- **Bug fixed**: TextLayerCard header now shows a provider badge when `translation_provider` is set — both MT drafts visually distinguishable at a glance on the record detail page
+- **Bug fixed**: ScholarlyReader layer tabs now show provider name for MT layers (e.g. "Machine Translation · Google Translate"); selected layer metadata panel also shows provider badge — resolves the "two identical Machine Translation tabs" problem
+- Branch: codex/qa-demo-hardening (pending merge)
+- **Action required**: Add `GOOGLE_TRANSLATE_API_KEY` and `ANTHROPIC_API_KEY` to `.env.local` for local dev; verify both are set in Vercel for production
+- **Action required**: Verify demo record exists in Supabase with full text layer path (OCR → transcription → Google MT → Claude MT + annotation + flag)
+- Deferred: ScholarlyReader annotations strip is a stub (hardcoded "None yet.") — not connected to real annotations; annotations still viewable on record detail page
+
 ### Session 27 — 2026-03-16
 - EP001: Claude Translation Escalation Path — implemented and merged to main (PR #25)
 - `@anthropic-ai/sdk` added; `ANTHROPIC_API_KEY` documented in `.env.example`

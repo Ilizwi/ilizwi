@@ -77,6 +77,10 @@
 
 ## Session Log
 
+### Session 26 — 2026-03-16
+- F023 PR #24 squash merged to main; feature branch deleted; all 24/24 features now on main
+- No remaining feature work. Project ready for QA/deployment pass.
+
 ### Session 25 — 2026-03-16
 - F023: Related Text Suggestions — implemented via multi-agent parallel team, integrated into record detail page
 - Created `src/lib/records/related.ts` — `getRelatedRecords()` utility with 3-signal SQL similarity (same issue > same publication > same language/period), max 5 deduplicated results

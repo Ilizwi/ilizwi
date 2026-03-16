@@ -11,7 +11,8 @@ export type ClaudeTranslateResult =
 
 export const CLAUDE_PROVIDER_NAME = "claude_anthropic";
 
-const SCHOLARLY_SYSTEM_PROMPT = `You are a scholarly translator specialising in African-language archival newspaper texts from the colonial and early post-colonial period. Your task is to produce a precise, readable English translation of the provided source text.
+function buildSystemPrompt(targetLang: string): string {
+  return `You are a scholarly translator specialising in African-language archival newspaper texts from the colonial and early post-colonial period. Your task is to produce a precise, readable translation into ${targetLang} of the provided source text.
 
 Guidelines:
 - Preserve proper nouns, place names, and personal names exactly as written in the source.
@@ -20,6 +21,7 @@ Guidelines:
 - Do not add interpretation, commentary, or editorial notes beyond the translation itself.
 - Maintain the original paragraph and sentence structure where possible.
 - Produce only the translation — no preamble, no explanation.`;
+}
 
 export async function translateWithClaude(
   text: string,
@@ -43,7 +45,7 @@ export async function translateWithClaude(
     const response = await client.messages.create({
       model: CLAUDE_MODEL,
       max_tokens: 4096,
-      system: SCHOLARLY_SYSTEM_PROMPT,
+      system: buildSystemPrompt(targetLang),
       messages: [{ role: "user", content: userMessage }],
     });
 

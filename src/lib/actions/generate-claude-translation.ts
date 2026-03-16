@@ -45,7 +45,9 @@ export async function generateClaudeTranslation(
   if (!record) return { error: "Record not found." };
   const projectId = record.project_id;
 
-  // 3. Permission check — membership-only (matches F013 boundary)
+  // 3. Permission check — membership-only, same roles as canCorrectTranslation.
+  //    Translator is included because they are the primary users of the escalation
+  //    path: they receive MT drafts for correction and need Claude for difficult passages.
   const { data: membership } = await supabase
     .from("project_memberships")
     .select("role")
@@ -55,7 +57,7 @@ export async function generateClaudeTranslation(
 
   if (
     !membership ||
-    !["project_admin", "researcher"].includes(membership.role)
+    !["project_admin", "researcher", "translator"].includes(membership.role)
   ) {
     return { error: "Permission denied." };
   }

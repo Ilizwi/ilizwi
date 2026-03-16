@@ -8,4 +8,8 @@ export type TargetLanguage = (typeof TARGET_LANGUAGE_ALLOWLIST)[number];
 // Import from here in UI components — never hardcode inline strings.
 export const PROVIDER_DISPLAY_LABELS: Record<string, string> = {
   google_cloud_translation: "Google Translate",
+  claude_anthropic: "Claude (Anthropic)",
 };
+
+// Pinned for auditability — update intentionally, not automatically.
+export const CLAUDE_MODEL = "claude-3-5-sonnet-20241022";

@@ -8,6 +8,7 @@ import FileViewerSection from "@/components/records/FileViewerSection";
 import ExtractTextSection from "@/components/records/ExtractTextSection";
 import TextLayerCard from "@/components/records/TextLayerCard";
 import GenerateTranslationSection from "@/components/records/GenerateTranslationSection";
+import RetryWithClaudeSection from "@/components/records/RetryWithClaudeSection";
 import AnnotationsPanel from "@/components/records/AnnotationsPanel";
 import { addAnnotation, updateAnnotation } from "@/lib/actions/annotations";
 import RecordFlagsPanel from "@/components/records/RecordFlagsPanel";
@@ -120,9 +121,15 @@ export default async function RecordDetailPage({
   const hasEligibleLayer = typedLayers.some(
     (l) => ELIGIBLE_LAYER_TYPES_FOR_MT.includes(l.layer_type) && !supersededIds.has(l.id)
   );
-  const hasActiveMtLayer = typedLayers.some(
-    (l) => l.layer_type === 'machine_translation' && !supersededIds.has(l.id)
+  // Provider-specific MT flags — two MT layers can coexist after EP001
+  const googleMtLayer = activeLayers.find(
+    (l) => l.layer_type === 'machine_translation' && l.translation_provider === 'google_cloud_translation'
   );
+  const claudeMtLayer = activeLayers.find(
+    (l) => l.layer_type === 'machine_translation' && l.translation_provider === 'claude_anthropic'
+  );
+  const hasGoogleMtLayer = !!googleMtLayer;
+  const hasClaudeMtLayer = !!claudeMtLayer;
 
   // Glossary matching — find source layer by priority
   const SOURCE_LAYER_PRIORITY = ['corrected_transcription', 'source_transcription', 'source_ocr'] as const;
@@ -480,7 +487,16 @@ export default async function RecordDetailPage({
             recordId={recordId}
             canGenerate={canAddLayer}
             hasEligibleLayer={hasEligibleLayer}
-            hasActiveMtLayer={hasActiveMtLayer}
+            hasGoogleMtLayer={hasGoogleMtLayer}
+          />
+        )}
+        {canCorrectTranslation && (
+          <RetryWithClaudeSection
+            recordId={recordId}
+            canEscalate={canCorrectTranslation}
+            hasEligibleLayer={hasEligibleLayer}
+            hasGoogleMtLayer={hasGoogleMtLayer}
+            hasClaudeMtLayer={hasClaudeMtLayer}
           />
         )}
         {canAddLayer && <AddTextLayerForm recordId={recordId} projectId={id} />}

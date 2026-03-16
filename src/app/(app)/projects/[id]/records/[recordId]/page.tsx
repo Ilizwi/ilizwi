@@ -13,6 +13,8 @@ import { addAnnotation, updateAnnotation } from "@/lib/actions/annotations";
 import RecordFlagsPanel from "@/components/records/RecordFlagsPanel";
 import { addRecordFlag, updateRecordFlag, removeRecordFlag } from "@/lib/actions/record-flags";
 import CitationExportButton from "@/components/records/CitationExportButton";
+import RelatedRecordsSection from "@/components/records/RelatedRecordsSection";
+import { getRelatedRecords } from "@/lib/records/related";
 
 export default async function RecordDetailPage({
   params,
@@ -182,6 +184,9 @@ export default async function RecordDetailPage({
     .order("created_at", { ascending: false });
 
   const recordFlags = (flagsData ?? []) as RecordFlag[];
+
+  // Related records — ranked by: same issue > same publication > same language/period
+  const relatedRecords = await getRelatedRecords(typedRecord, supabase);
 
   // Permission: can add text layer?
   // canCorrectTranslation is membership-only (no super_admin bypass) —
@@ -519,6 +524,9 @@ export default async function RecordDetailPage({
           updateNoteError={resolvedSearch?.updateFlagNoteError}
         />
       </section>
+
+      {/* Related Records */}
+      <RelatedRecordsSection relatedRecords={relatedRecords} projectId={id} />
     </div>
   );
 }

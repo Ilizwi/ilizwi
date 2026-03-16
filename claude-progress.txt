@@ -4,9 +4,8 @@
 
 ## Current State
 As of: 2026-03-16
-Completed: F001–F022, F024 (23 of 24 features)
-Day 1–5 complete. All P0 and all P1 features complete. One P2 feature remaining.
-Next: F023 Related Text Suggestions (Day 5, P2) — only remaining feature
+Completed: F001–F024 (24 of 24 features)
+Day 1–5 complete. All P0, P1, and P2 features complete. Project feature development finished.
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -31,6 +30,7 @@ Next: F023 Related Text Suggestions (Day 5, P2) — only remaining feature
 - F020: Search and Filter — PASSED (2026-03-14)
 - F021: Citation Packet Export — PASSED (2026-03-14)
 - F022: Corpus Trend View — PASSED (2026-03-14)
+- F023: Related Text Suggestions — PASSED (2026-03-16)
 - F024: Admin Record Audit and Activity Trace — PASSED (2026-03-16)
 
 ## Blockers
@@ -38,7 +38,7 @@ Next: F023 Related Text Suggestions (Day 5, P2) — only remaining feature
 - Readex permissions response pending
 
 ## Next Actions
-- F023 Related Text Suggestions (Day 5, P2) — only remaining feature
+- All 24 features complete. No remaining feature work.
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -60,6 +60,16 @@ Next: F023 Related Text Suggestions (Day 5, P2) — only remaining feature
 - Both layers (MT draft + corrected_translation) remain active — no supersession, no cross-type linking; both accessible on record reopen
 - Build passes clean (no warnings). All 5 PRD test steps satisfied. F014 PASSED.
 - plan/2026-03-13-f014-translation-editor-correction-workflow.md written (addendums applied)
+
+### Session 25 — 2026-03-16
+- F023: Related Text Suggestions — implemented via multi-agent parallel team
+- Created src/lib/records/related.ts (getRelatedRecords utility, 3-signal SQL similarity)
+- Created src/components/records/RelatedRecordsSection.tsx (presentational table component)
+- Modified record detail page to call getRelatedRecords() and render RelatedRecordsSection
+- Section hidden when no results; max 5 results ranked by: same issue > same publication > same language/period
+- No schema changes needed
+- All 5 PRD test steps satisfied. F023 PASSED.
+- All 24 features complete. Project feature development finished.
 
 ### Session 24 — 2026-03-16
 - F024: Admin Record Audit and Activity Trace — implemented via 4-agent parallel team, 4 review rounds, squash merged to main (PR #23)

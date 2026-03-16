@@ -75,7 +75,28 @@
 
 ---
 
+## Post-Stage Enhancements
+
+- [x] EP001: Claude Translation Escalation Path — SHIPPED (2026-03-16, PR #25)
+  - Adds Claude (Anthropic) as a manually triggered escalation for difficult historical passages
+  - "Retry with Claude" button appears after Google MT draft exists; disappears once Claude draft is generated
+  - Both MT drafts coexist and appear in Text Layers via existing TextLayerCard
+  - Eligible roles: project_admin, researcher, translator
+  - No database migration — uses existing translation_provider column
+
+---
+
 ## Session Log
+
+### Session 27 — 2026-03-16
+- EP001: Claude Translation Escalation Path — implemented and merged to main (PR #25)
+- `@anthropic-ai/sdk` added; `ANTHROPIC_API_KEY` documented in `.env.example`
+- New server-only `claude-translate.ts`: scholarly `buildSystemPrompt(targetLang)`, non-throwing error shape, pinned model `claude-3-5-sonnet-20241022`
+- New server action `generate-claude-translation.ts`: mirrors F013; idempotent (blocks if Claude MT exists); requires Google MT first; infers target language server-side; allows project_admin + researcher + translator; reuses `generate_translation` audit action type
+- New `RetryWithClaudeSection.tsx`: slim trigger UI; settled state when draft exists; no comparison panel (TextLayerCard handles both drafts)
+- `GenerateTranslationSection` guard narrowed to Google MT specifically (`hasGoogleMtLayer`)
+- Record detail page: provider-specific MT flags; `RetryWithClaudeSection` wired for `canCorrectTranslation` users
+- Code review fixes: translator role added to action; system prompt made target-language-aware
 
 ### Session 26 — 2026-03-16
 - F023 PR #24 squash merged to main; feature branch deleted; all 24/24 features now on main

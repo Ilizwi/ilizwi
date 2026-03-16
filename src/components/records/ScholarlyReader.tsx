@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { SourceRecord, EnrichedFileAsset, TextLayer, LayerType } from "@/types";
+import { PROVIDER_DISPLAY_LABELS } from "@/lib/translation/translation-constants";
 
 const LAYER_TYPE_LABELS: Record<LayerType, string> = {
   source_ocr: "Source OCR",
@@ -216,6 +217,11 @@ export default function ScholarlyReader({
                     }`}
                   >
                     {LAYER_TYPE_LABELS[layer.layer_type]}
+                    {layer.translation_provider && (
+                      <span className="ml-1 opacity-70">
+                        · {PROVIDER_DISPLAY_LABELS[layer.translation_provider] ?? layer.translation_provider}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -238,6 +244,11 @@ export default function ScholarlyReader({
                     {activeLayer.language && (
                       <span className="text-xs font-sans text-desk-muted">
                         {activeLayer.language}
+                      </span>
+                    )}
+                    {activeLayer.translation_provider && (
+                      <span className="inline-block px-2 py-0.5 text-[10px] font-sans uppercase tracking-widest rounded-[2px] bg-historic/10 text-historic">
+                        {PROVIDER_DISPLAY_LABELS[activeLayer.translation_provider] ?? activeLayer.translation_provider}
                       </span>
                     )}
                     <span className="text-xs font-sans text-desk-muted ml-auto">

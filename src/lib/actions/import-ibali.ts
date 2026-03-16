@@ -15,6 +15,7 @@ import {
   mapIbaliItem,
   extractMediaRefs,
 } from "@/lib/sources/ibali";
+import { insertAuditLog } from "@/lib/audit/log";
 
 // --- Permission guard (mirrors assertUploadPermission in records.ts exactly) ---
 
@@ -212,6 +213,14 @@ export async function importFromIbali(
   console.log(
     `[importFromIbali] actor=${profile.id} ibali_item=${itemId} record=${recordId} ref=${canonicalRef} project=${projectId}`
   );
+
+  await insertAuditLog({
+    projectId,
+    actorId: profile.id,
+    actionType: "import_ibali",
+    recordId,
+    metadata: { canonicalRef, sourceIdentifier: itemId },
+  });
 
   revalidatePath(`/projects/${projectId}/records`);
   return { error: null, recordId };

@@ -10,6 +10,7 @@ import {
   type TargetLanguage,
 } from "@/lib/translation/google-translate";
 import type { TextLayer } from "@/types";
+import { insertAuditLog } from "@/lib/audit/log";
 
 type GenerateResult =
   | { data: { layerId: string } }
@@ -157,6 +158,14 @@ export async function generateMachineTranslation(
     translation_provider: PROVIDER_NAME,
     record_id: recordId,
     project_id: projectId,
+  });
+
+  await insertAuditLog({
+    projectId,
+    actorId: profile.id,
+    actionType: "generate_translation",
+    recordId,
+    metadata: { layerId: newLayer.id, targetLanguage, provider: PROVIDER_NAME },
   });
 
   // 12. Revalidate record page

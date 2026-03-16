@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/role-guard";
+import { insertAuditLog } from "@/lib/audit/log";
 
 export async function saveTranslationCorrection(
   _prevState: { error: string | null },
@@ -100,6 +101,14 @@ export async function saveTranslationCorrection(
     source_layer_id: sourceLayerId,
     record_id: recordId,
     project_id: projectId,
+  });
+
+  await insertAuditLog({
+    projectId,
+    actorId: profile.id,
+    actionType: "save_translation_correction",
+    recordId,
+    metadata: { layerId: newLayer.id, sourceLayerId },
   });
 
   // 8b. Translation Memory capture (non-blocking)

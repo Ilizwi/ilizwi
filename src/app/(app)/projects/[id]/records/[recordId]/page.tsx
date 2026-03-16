@@ -221,6 +221,10 @@ export default async function RecordDetailPage({
     canEditAllFlags = membership?.role === "project_admin";
   }
 
+  // isAdmin: super_admin or project_admin — same pattern as project detail page.
+  // canEditAllAnnotations already captures this (super_admin || project_admin).
+  const isAdmin = canEditAllAnnotations;
+
   const statusBadge = (status: string) => {
     switch (status) {
       case "raw":
@@ -345,6 +349,14 @@ export default async function RecordDetailPage({
           </Link>
         )}
         <CitationExportButton recordId={recordId} canonicalRef={typedRecord.canonical_ref} />
+        {isAdmin && (
+          <Link
+            href={`/projects/${id}/audit?record=${recordId}`}
+            className="text-xs font-sans text-desk-muted underline underline-offset-2"
+          >
+            Activity &rarr;
+          </Link>
+        )}
       </div>
 
       {/* Provenance */}

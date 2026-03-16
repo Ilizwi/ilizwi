@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/role-guard";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { insertAuditLog } from "@/lib/audit/log";
 
 const VALID_LAYER_TYPES = [
   "source_ocr",
@@ -129,6 +130,14 @@ export async function addTextLayer(
     `[addTextLayer] actor=${profile.id} added layer=${row.id} type=${layerType} to record=${recordId} project=${projectId}${supersedesLayerId ? ` supersedes=${supersedesLayerId}` : ""}`
   );
 
+  await insertAuditLog({
+    projectId,
+    actorId: profile.id,
+    actionType: "add_text_layer",
+    recordId,
+    metadata: { layerId: row.id, layerType, supersedesLayerId },
+  });
+
   revalidatePath(`/projects/${projectId}/records/${recordId}`);
   return { error: null };
 }
@@ -184,6 +193,14 @@ export async function updateLayerStatus(
   console.log(
     `[updateLayerStatus] actor=${profile.id} layer=${layerId} status=${newStatus} record=${recordId} project=${projectId}`
   );
+
+  await insertAuditLog({
+    projectId,
+    actorId: profile.id,
+    actionType: "update_layer_status",
+    recordId,
+    metadata: { layerId, newStatus },
+  });
 
   revalidatePath(`/projects/${projectId}/records/${recordId}`);
   return { error: null };

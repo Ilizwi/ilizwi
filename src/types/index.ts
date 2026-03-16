@@ -203,3 +203,15 @@ export interface RecordFlag {
   updated_at: string;
   profiles?: { display_name: string | null; email: string };
 }
+
+export interface AuditLog {
+  id: string;
+  project_id: string;
+  record_id: string | null;
+  actor_id: string;
+  action_type: string;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+  profiles?: { display_name: string | null; email: string } | null;
+  source_records?: { canonical_ref: string } | null;
+}

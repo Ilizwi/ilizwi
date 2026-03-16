@@ -3,10 +3,10 @@
 # Format: [Date] [Session] - Notes
 
 ## Current State
-As of: 2026-03-14
-Completed: F001, F002, F003, F004, F005, F006, F007, F008, F009, F010, F011, F012, F013, F014, F015, F016, F017, F018, F019, F020, F021, F022
-Day 1 complete. Day 2 complete. Day 3 complete (5/5 features done). Day 4 complete (4/4 done). Day 5 in progress (2/4 done). All P0 features complete.
-Next: F024 Admin Record Audit and Activity Trace (Day 5, P1) — F023 is P2, do after remaining P1s
+As of: 2026-03-16
+Completed: F001–F022, F024 (23 of 24 features)
+Day 1–5 complete. All P0 and all P1 features complete. One P2 feature remaining.
+Next: F023 Related Text Suggestions (Day 5, P2) — only remaining feature
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -31,14 +31,14 @@ Next: F024 Admin Record Audit and Activity Trace (Day 5, P1) — F023 is P2, do 
 - F020: Search and Filter — PASSED (2026-03-14)
 - F021: Citation Packet Export — PASSED (2026-03-14)
 - F022: Corpus Trend View — PASSED (2026-03-14)
+- F024: Admin Record Audit and Activity Trace — PASSED (2026-03-16)
 
 ## Blockers
 - Final product name pending
 - Readex permissions response pending
 
 ## Next Actions
-- F024 Admin Record Audit and Activity Trace (Day 5, P1) — next unblocked feature
-- F023 Related Text Suggestions (Day 5, P2) — after F024
+- F023 Related Text Suggestions (Day 5, P2) — only remaining feature
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -60,6 +60,21 @@ Next: F024 Admin Record Audit and Activity Trace (Day 5, P1) — F023 is P2, do 
 - Both layers (MT draft + corrected_translation) remain active — no supersession, no cross-type linking; both accessible on record reopen
 - Build passes clean (no warnings). All 5 PRD test steps satisfied. F014 PASSED.
 - plan/2026-03-13-f014-translation-editor-correction-workflow.md written (addendums applied)
+
+### Session 24 — 2026-03-16
+- F024: Admin Record Audit and Activity Trace — implemented via 4-agent parallel team, 4 review rounds, squash merged to main (PR #23)
+- Migration `20260314000008_f024_audit_logs`: `audit_logs` table — `actor_id ON DELETE RESTRICT` (preserves history on profile deletion); admin-only SELECT policy; NO INSERT policy (service role only — no user-session insert path)
+- New: `src/lib/supabase/service.ts` — singleton service role client (`createClient<any>`), `import "server-only"` guard, used only from server-side code
+- New: `src/lib/audit/log.ts` — `insertAuditLog({ projectId, actorId, actionType, recordId?, metadata? })`; full try/catch (never throws); checks `{ error }` from insert; service role client created internally (no supabase arg)
+- Wired 14 action types: upload_record, import_ibali/nlsa/wits, add_text_layer, update_layer_status, extract_text, generate_translation, save_translation_correction, add_annotation, update_annotation, add_record_flag, update_record_flag, remove_record_flag
+- New: `src/app/(app)/projects/[id]/audit/page.tsx` — server component; admin-only (isAdmin pattern); ?record=<UUID> filter with UUID regex validation; { error } from query logged; `formatMetadata()` renders compact suffix per action (e.g. "Updated layer status → approved"); limit 100
+- Modified `src/app/(app)/projects/[id]/page.tsx`: "Activity Trace →" link (isAdmin)
+- Modified `src/app/(app)/projects/[id]/records/[recordId]/page.tsx`: "Activity →" link to filtered audit view (isAdmin)
+- Added `AuditLog` interface to `src/types/index.ts`
+- Added `server-only` npm dependency
+- Review iterations: (R1) tighten INSERT policy + UUID validation + metadata display; (R2) service role path to prevent forgery; (R3) super_admin non-member support (moot after R2); (R4) try/catch + server-only guard
+- Build, typecheck, lint all pass. All 5 PRD test steps satisfied. F024 PASSED.
+- plan/2026-03-16-f024-admin-record-audit-activity-trace.md written
 
 ### Session 23 — 2026-03-14
 - F022: Corpus Trend View — implemented via 2-agent parallel team (Agent A: utility + component; Agent B: page + dashboard), 2 P1 review findings fixed, squash merged to main (PR #22)

@@ -361,7 +361,7 @@
         "Filter or inspect a specific record\u2019s activity history.",
         "Confirm the audit information helps identify who changed what and when."
       ],
-      "passes": false
+      "passes": true
     }
   ]
 }

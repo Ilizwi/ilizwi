@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 22 |
-| Remaining | 2 |
+| Completed | 23 |
+| Remaining | 1 |
 | Current Day | 5 |
 
 ## Day 1: Foundation
@@ -64,18 +64,25 @@
 ---
 
 ## Day 5: Reporting, Discovery, and Polish
-**Status:** In progress (2/4 done)
+**Status:** In progress (3/4 done)
 
 - [x] F021: Citation Packet Export — PASSED
 - [x] F022: Corpus Trend View — PASSED
 - [ ] F023: Related Text Suggestions
-- [ ] F024: Admin Record Audit and Activity Trace
+- [x] F024: Admin Record Audit and Activity Trace — PASSED
 
 **Deliverable:** Research outputs, auditability, and polish complete
 
 ---
 
 ## Session Log
+
+### Session 24 — 2026-03-16
+- F024 Admin Record Audit and Activity Trace — implemented via 4-agent parallel team, 4 review rounds, squash merged to main (PR #23)
+- New: `audit_logs` migration, `src/lib/supabase/service.ts` (service role client, server-only), `src/lib/audit/log.ts` (non-blocking helper), `src/app/(app)/projects/[id]/audit/page.tsx`
+- 14 action types wired across all record-mutating server actions
+- Key security decisions: writes use service role (no user INSERT path); no INSERT RLS policy; try/catch wraps full helper body; UUID filter validated before query
+- F024 PASSED. 1 feature remaining: F023 Related Text Suggestions (P2)
 
 ### Session 1 — 2026-03-12
 - Initial project docs created

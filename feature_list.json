@@ -346,7 +346,7 @@
         "Open a suggested record and confirm it is relevant by shared context, term, or source relationship.",
         "Return to the original record and confirm the related suggestions remain available."
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F024",

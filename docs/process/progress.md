@@ -4,8 +4,8 @@
 | Metric | Value |
 |--------|-------|
 | Total Features | 24 |
-| Completed | 23 |
-| Remaining | 1 |
+| Completed | 24 |
+| Remaining | 0 |
 | Current Day | 5 |
 
 ## Day 1: Foundation
@@ -64,11 +64,11 @@
 ---
 
 ## Day 5: Reporting, Discovery, and Polish
-**Status:** In progress (3/4 done)
+**Status:** Complete
 
 - [x] F021: Citation Packet Export — PASSED
 - [x] F022: Corpus Trend View — PASSED
-- [ ] F023: Related Text Suggestions
+- [x] F023: Related Text Suggestions — PASSED
 - [x] F024: Admin Record Audit and Activity Trace — PASSED
 
 **Deliverable:** Research outputs, auditability, and polish complete
@@ -76,6 +76,14 @@
 ---
 
 ## Session Log
+
+### Session 25 — 2026-03-16
+- F023: Related Text Suggestions — implemented via multi-agent parallel team, integrated into record detail page
+- Created `src/lib/records/related.ts` — `getRelatedRecords()` utility with 3-signal SQL similarity (same issue > same publication > same language/period), max 5 deduplicated results
+- Created `src/components/records/RelatedRecordsSection.tsx` — presentational table component with canonical_ref links, publication title, date, and relationship reason badges
+- Modified record detail page to call `getRelatedRecords()` and render `RelatedRecordsSection`; section hidden when no results
+- No schema changes required. All 5 PRD test steps satisfied. F023 PASSED.
+- All 24 features complete. Project feature development finished.
 
 ### Session 24 — 2026-03-16
 - F024 Admin Record Audit and Activity Trace — implemented via 4-agent parallel team, 4 review rounds, squash merged to main (PR #23)

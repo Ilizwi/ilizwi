@@ -8,7 +8,7 @@ type Props = {
   recordId: string;
   canGenerate: boolean;
   hasEligibleLayer: boolean;
-  hasActiveMtLayer: boolean;
+  hasGoogleMtLayer: boolean;
 };
 
 const LANGUAGE_LABELS: Record<string, string> = {
@@ -25,7 +25,7 @@ export default function GenerateTranslationSection({
   recordId,
   canGenerate,
   hasEligibleLayer,
-  hasActiveMtLayer,
+  hasGoogleMtLayer,
 }: Props) {
   const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
     generateMachineTranslation,
@@ -45,11 +45,11 @@ export default function GenerateTranslationSection({
     );
   }
 
-  if (hasActiveMtLayer) {
+  if (hasGoogleMtLayer) {
     return (
       <div className="border border-desk-border rounded-[2px] p-4 mt-4">
         <p className="text-xs font-sans text-desk-muted">
-          A machine translation draft already exists for this record.
+          A Google Translate draft already exists for this record.
         </p>
       </div>
     );

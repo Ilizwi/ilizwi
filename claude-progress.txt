@@ -4,8 +4,8 @@
 
 ## Current State
 As of: 2026-03-16
-Completed: F001–F024 (24 of 24 features)
-Day 1–5 complete. All P0, P1, and P2 features complete. Project feature development finished.
+Completed: F001–F024 (24 of 24 features) + EP001 Claude Translation Escalation Path
+Day 1–5 complete. All P0, P1, and P2 features complete. EP001 post-stage enhancement in progress (PR open).
 
 ## Completed Features
 - F001: Authentication and Role-Based Access — PASSED (2026-03-12)
@@ -37,8 +37,11 @@ Day 1–5 complete. All P0, P1, and P2 features complete. Project feature develo
 - Final product name pending
 - Readex permissions response pending
 
+## Post-Stage Enhancements
+- EP001: Claude Translation Escalation Path — in progress (branch: codex/ep001-claude-translation-escalation, PR open)
+
 ## Next Actions
-- All 24 features complete. No remaining feature work.
+- All 24 features complete. EP001 is a post-stage enhancement for the Dr Panashe demo.
 
 ## Known Limitations / Deferred
 - Storage path still uses {projectId}/{recordId}/{filename} — not aligned with canonical_ref
@@ -60,6 +63,19 @@ Day 1–5 complete. All P0, P1, and P2 features complete. Project feature develo
 - Both layers (MT draft + corrected_translation) remain active — no supersession, no cross-type linking; both accessible on record reopen
 - Build passes clean (no warnings). All 5 PRD test steps satisfied. F014 PASSED.
 - plan/2026-03-13-f014-translation-editor-correction-workflow.md written (addendums applied)
+
+### Session 27 — 2026-03-16
+- EP001: Claude Translation Escalation Path — implemented, PR open
+- Installed @anthropic-ai/sdk; added ANTHROPIC_API_KEY to .env.example
+- New: src/lib/translation/claude-translate.ts (server-only, scholarly prompt, non-throwing error shape)
+- New: src/lib/actions/generate-claude-translation.ts (mirrors F013 action; blocks if Claude MT exists; requires Google MT first; infers targetLanguage from Google MT layer; audit reuses generate_translation action type with metadata.provider=claude_anthropic)
+- New: src/components/records/RetryWithClaudeSection.tsx (slim trigger UI only; settled state when Claude draft exists)
+- Modified: translation-constants.ts — claude_anthropic provider label + CLAUDE_MODEL constant
+- Modified: GenerateTranslationSection.tsx — renamed hasActiveMtLayer → hasGoogleMtLayer (provider-specific guard)
+- Modified: record detail page — replaced generic hasActiveMtLayer with googleMtLayer/claudeMtLayer provider-specific flags; RetryWithClaudeSection rendered after GenerateTranslationSection; visible to canCorrectTranslation users
+- Addendums applied: simplified UI (no comparison panel; TextLayerCard handles both drafts); audit minimal; server-only explicit; provider-specific flags replace generic MT; no duplicate correction UX (TranslationEditorForm reused via TextLayerCard)
+- Build, typecheck, lint all pass.
+- plan/2026-03-16-ep001-claude-translation-escalation.md written (addendums incorporated)
 
 ### Session 26 — 2026-03-16
 - F023 PR #24 squash merged to main and branch deleted
